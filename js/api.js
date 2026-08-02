@@ -1,5 +1,5 @@
 /**
- * Rapid Boy Service Manager Pro V4.5 - Frontend API Bridge Driver
+ * Rapid Boy Service Manager Pro V4.6 - Frontend API Bridge Driver
  * Intercepts CORS & Preflight Redirections to communicate with Google Apps Script
  */
 
@@ -13,20 +13,32 @@ window.RapidBoy = window.RapidBoy || {};
     // Replace with your active Google Apps Script Web App Deployment URL
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxIPn0hlUQDiOuTglXDFPikdvpynHjmBdoFJke00oDNatfHljrRpKnTtpROqyf_KFjQxA/exec";
 
+    // Request Timeout configuration (15 seconds)
+    const API_TIMEOUT_MS = 15000;
+
     /**
-     * Generic secure POST payload transmission wrapper
+     * Generic secure POST payload transmission wrapper with safety cloning, timeout, and robust parsing
      */
-    App.Api.transmitPayload = async function (payloadData) {
+    App.Api.transmitPayload = async function (payloadData = {}) {
         if (!WEB_APP_URL || WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-            console.warn("⚠️ API Warning: Web App URL is not set in js/api.js!");
+            throw new Error("API Critical Error: Web App URL is not set in js/api.js!");
         }
 
-        // Attach active session credentials if available
+        // Clone payload safely to avoid direct object mutation side effects
+        const clonedPayload = { ...payloadData };
+
+        // Attach active session credentials safely if available
         if (App.Auth && typeof App.Auth.getSystemVerificationCredentials === 'function') {
             const creds = App.Auth.getSystemVerificationCredentials();
-            payloadData.authUsername = creds.u || payloadData.authUsername;
-            payloadData.authPassword = creds.p || payloadData.authPassword;
+            if (creds && typeof creds === 'object') {
+                clonedPayload.authUsername = creds.u || clonedPayload.authUsername || "";
+                clonedPayload.authPassword = creds.p || clonedPayload.authPassword || "";
+            }
         }
+
+        // Setup AbortController for network timeout handling
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
         try {
             const response = await fetch(WEB_APP_URL, {
@@ -34,23 +46,39 @@ window.RapidBoy = window.RapidBoy || {};
                 headers: {
                     "Content-Type": "text/plain;charset=utf-8"
                 },
-                body: JSON.stringify(payloadData)
+                body: JSON.stringify(clonedPayload),
+                signal: controller.signal
             });
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                throw new Error(`HTTP Transport Error: ${response.status}`);
+                throw new Error(`HTTP Transport Error: Status ${response.status} (${response.statusText})`);
             }
 
             const rawText = await response.text();
+            
+            // Check if response accidentally returned HTML (e.g. Google Apps Script permission or script error page)
+            if (!rawText || rawText.trim().startsWith("<!DOCTYPE html>") || rawText.trim().startsWith("<html")) {
+                console.error("API Received HTML Response instead of JSON:", rawText.substring(0, 200));
+                throw new Error("Backend endpoint returned an HTML error/login page. Please check Apps Script deployment permissions.");
+            }
+
             let jsonResult;
             try {
                 jsonResult = JSON.parse(rawText);
             } catch (parseErr) {
-                throw new Error("Invalid response string received from backend endpoint.");
+                console.error("JSON Parse Exception. Raw Text Received:", rawText);
+                throw new Error("Invalid response format received from backend endpoint (Non-JSON).");
             }
 
             return jsonResult;
         } catch (err) {
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                console.error("API Request Timeout Exception after", API_TIMEOUT_MS, "ms");
+                throw new Error("Request timed out. Backend server took too long to respond.");
+            }
             console.error("API Transmission Exception:", err);
             throw err;
         }
