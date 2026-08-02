@@ -432,4 +432,191 @@ window.RapidBoy = window.RapidBoy || {};
       whatsAppNumber: document.getElementById('form-whatsapp-number')?.value.trim() || document.getElementById('form-phone-number')?.value.trim() || "",
       referralPerson: document.getElementById('form-referral-person')?.value.trim() || "",
       deviceType: document.getElementById('form-device-type')?.value || "Laptop",
-      brand: document.getElementBy
+      brand: document.getElementById('form-brand')?.value.trim() || "",
+      model: document.getElementById('form-model')?.value.trim() || "",
+      serialNumber: document.getElementById('form-serial-number')?.value.trim() || "",
+      spareSerial: sparePartsList.length > 0 ? sparePartsList.join(', ') : (document.getElementById('form-spare-serial')?.value.trim() || ""),
+      accessorySerial: accSerialList.length > 0 ? accSerialList.join(' | ') : (document.getElementById('form-accessory-serial')?.value.trim() || ""),
+      status: newStatus,
+      deliveryDate: document.getElementById('form-delivery-date')?.value || "2–7 Working Days",
+      estimationFrom: parseFloat(document.getElementById('form-estimation-from')?.value) || 0,
+      estimationTo: parseFloat(document.getElementById('form-estimation-to')?.value) || 0,
+      finalCost: finalCost,
+      advance: advance,
+      paymentMethod: paymentMethod,
+      cashReceiver: cashReceiver,
+      upiQrType: upiQrType,
+      issue: formattedIssues,
+      remarks: document.getElementById('form-remarks')?.value.trim() || "",
+      privateTechNotes: document.getElementById('form-private-tech-notes')?.value.trim() || "",
+      statusNotes: statusMemo,
+      accessories: accessories.join(', '),
+      technician: technicians.join(', '),
+      timeline: JSON.stringify(existingTimeline)
+    };
+
+    try {
+      await App.Utils.executeSecureOperation(async () => {
+        const activeDriver = window.API || window.Api || App.Api;
+        const actionTarget = (mode === "UPDATE") ? "updateTicket" : "createTicket";
+        const res = await activeDriver.transmitPayload({ action: actionTarget, ...payload });
+
+        if (res && res.status === "success") {
+          App.UI.showToast("Success", "Work order saved successfully.", "success");
+          document.getElementById('master-ticket-operational-form')?.reset();
+          operationalIssuesCollection = [];
+          App.Form.renderDynamicIssuesChecklist();
+          App.Form.togglePaymentDynamicFields();
+          const spareContainerReset = document.getElementById('dynamic-spare-parts-container');
+          if (spareContainerReset) spareContainerReset.innerHTML = '';
+          const accSerialContainerReset = document.getElementById('dynamic-accessory-serial-container');
+          if (accSerialContainerReset) accSerialContainerReset.innerHTML = '';
+
+          await App.UI.refreshGlobalDataStream(true);
+
+          if (App.Navigation && typeof App.Navigation.navigateTo === 'function') {
+            App.Navigation.navigateTo('view-tickets-list');
+          }
+        } else {
+          throw new Error(res.message || "Failed to save work order.");
+        }
+      }, "Saving ticket to spreadsheet...");
+    } catch (e) {
+      console.error("Form submit error:", e);
+    }
+  };
+
+  App.Form.loadTicketIntoEditorForm = function (ticketNumberId) {
+    const cleanSearchId = String(ticketNumberId).trim().toLowerCase();
+    const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === cleanSearchId);
+
+    if (!ticket) return;
+
+    try {
+      if (App.Navigation && typeof App.Navigation.navigateTo === 'function') {
+        App.Navigation.navigateTo('view-ticket-form');
+      }
+
+      const heading = document.getElementById('ticket-form-title-heading');
+      if (heading) heading.innerText = `Update Work Order [ ${ticket.ticketNumber} ]`;
+
+      const opMode = document.getElementById('form-operation-mode');
+      if (opMode) opMode.value = "UPDATE";
+
+      const ticketHidden = document.getElementById('form-ticket-id-hidden');
+      if (ticketHidden) ticketHidden.value = ticket.ticketNumber;
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val !== undefined && val !== null ? val : "";
+      };
+
+      setVal('form-customer-type', ticket.customerType || "Customer");
+      setVal('form-customer-name', ticket.customerName || "");
+      setVal('form-phone-number', ticket.phoneNumber || "");
+      setVal('form-whatsapp-number', ticket.whatsAppNumber || ticket.phoneNumber || "");
+      setVal('form-referral-person', ticket.referralPerson || "");
+
+      setVal('form-device-type', ticket.deviceType || "Laptop");
+      setVal('form-brand', ticket.brand || "");
+      setVal('form-model', ticket.model || "");
+      setVal('form-serial-number', ticket.serialNumber || "");
+      setVal('form-accessory-serial', ticket.accessorySerial || "");
+
+      const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
+      if (accSerialContainer) {
+        accSerialContainer.innerHTML = "";
+        if (ticket.accessorySerial && ticket.accessorySerial.includes('|')) {
+          const accSerials = String(ticket.accessorySerial).split('|').map(s => s.trim());
+          accSerials.forEach(acc => {
+            const parts = acc.split(': S/N');
+            if (parts.length === 2) {
+              App.Form.addAccessorySerialRow(parts[0].trim(), parts[1].trim());
+            } else if (acc) {
+              App.Form.addAccessorySerialRow(acc, "");
+            }
+          });
+        }
+      }
+
+      const spareContainer = document.getElementById('dynamic-spare-parts-container');
+      if (spareContainer) {
+        spareContainer.innerHTML = "";
+        if (ticket.spareSerial) {
+          const parts = String(ticket.spareSerial).split(',').map(s => s.trim());
+          parts.forEach(p => {
+            if (p) App.Form.addSparePartRow(p, "");
+          });
+        }
+      }
+
+      setVal('form-status', ticket.status || "Pending");
+      setVal('form-delivery-date', ticket.deliveryDate || "2–7 Working Days");
+
+      setVal('form-estimation-from', ticket.estimationFrom || 0);
+      setVal('form-estimation-to', ticket.estimationTo || 0);
+      setVal('form-final-cost', ticket.finalCost || 0);
+      setVal('form-advance', ticket.advance || 0);
+
+      setVal('form-payment-method', ticket.paymentMethod || "Cash");
+      App.Form.togglePaymentDynamicFields();
+
+      setVal('form-cash-receiver', ticket.cashReceiver || "Anand");
+      setVal('form-upi-qr-type', ticket.upiQrType || "Rapidboy QR");
+
+      setVal('form-remarks', ticket.remarks || "");
+      setVal('form-private-tech-notes', ticket.privateTechNotes || "");
+      setVal('form-status-notes', ticket.statusNotes || "");
+
+      if (ticket.issue) {
+        operationalIssuesCollection = String(ticket.issue).split(',').map(s => {
+          let clean = s.trim();
+          let isDone = false;
+          if (clean.startsWith('[DONE]')) {
+            isDone = true;
+            clean = clean.replace('[DONE]', '').trim();
+          }
+
+          let minCost = 0;
+          let maxCost = 0;
+          let text = clean;
+
+          const match = clean.match(/\(([\d]+)-([\d]+)\)$/);
+          if (match) {
+            minCost = parseFloat(match[1]) || 0;
+            maxCost = parseFloat(match[2]) || 0;
+            text = clean.replace(/\([\d]+-[\d]+\)$/, '').trim();
+          }
+
+          return { text: text, minCost: minCost, maxCost: maxCost, isDone: isDone };
+        }).filter(item => item.text.length > 0);
+      } else {
+        operationalIssuesCollection = [];
+      }
+      App.Form.renderDynamicIssuesChecklist();
+
+      const form = document.getElementById('master-ticket-operational-form');
+      if (form) {
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+        if (ticket.accessories) {
+          const accs = String(ticket.accessories).split(',').map(s => s.trim());
+          form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            if (accs.includes(cb.value)) cb.checked = true;
+          });
+        }
+
+        if (ticket.technician) {
+          const techs = String(ticket.technician).split(',').map(s => s.trim());
+          form.querySelectorAll('input[name="tech-nodes"]').forEach(cb => {
+            if (techs.includes(cb.value)) cb.checked = true;
+          });
+        }
+      }
+
+    } catch (err) {
+      console.error("Critical Exception in loadTicketIntoEditorForm:", err);
+    }
+  };
+
+})(window.RapidBoy);
