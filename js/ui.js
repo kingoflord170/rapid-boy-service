@@ -305,7 +305,7 @@ window.RapidBoy = window.RapidBoy || {};
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `RapidBoy_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `RapidBoy_Ledger_${getLocalISODate()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -358,13 +358,106 @@ window.RapidBoy = window.RapidBoy || {};
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
   };
 
-  App.UI.printTicketA5Format = function (ticketNumberId) { App.UI.printTicketA4Format(ticketNumberId); };
-  App.UI.printTicketThermalFormat = function (ticketNumberId) { App.UI.printTicketA4Format(ticketNumberId); };
+  /**
+   * Dedicated Compact A5 Print Engine
+   */
+  App.UI.printTicketA5Format = function (ticketNumberId) {
+    const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
+    if (!ticket) return;
+    const baseDomain = getSafeBaseDomain();
+    const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+
+    let iframe = document.getElementById('rapidboy-print-iframe');
+    if (iframe) iframe.remove();
+
+    iframe = document.createElement('iframe');
+    iframe.id = 'rapidboy-print-iframe';
+    iframe.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8"><title>A5 Print - ${ticket.ticketNumber}</title>
+        <style>
+          @page { size: A5 portrait; margin: 8mm; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 8.5pt; color: #000; }
+          h2 { font-size: 11pt; margin-bottom: 4px; }
+          p { margin: 4px 0; }
+        </style>
+      </head>
+      <body>
+        <h2>RAPID BOY - A5 JOB SHEET</h2>
+        <p><strong>Ticket:</strong> ${ticket.ticketNumber} | <strong>Date:</strong> ${ticket.createdDate || 'N/A'}</p>
+        <p><strong>Customer:</strong> ${ticket.customerName} (${ticket.phoneNumber})</p>
+        <p><strong>Device:</strong> ${ticket.deviceType} - ${ticket.brand} ${ticket.model}</p>
+        <p><strong>Issue:</strong> ${ticket.issue}</p>
+        <p><strong>Final Cost:</strong> ₹${ticket.finalCost || 0} | <strong>Status:</strong> ${ticket.status}</p>
+        <p style="font-size: 7.5pt; margin-top: 10px;">Track: ${liveTrackerLink}</p>
+      </body>
+      </html>
+    `);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
+  };
+
+  /**
+   * Dedicated 58mm Thermal Receipt Print Engine
+   */
+  App.UI.printTicketThermalFormat = function (ticketNumberId) {
+    const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
+    if (!ticket) return;
+
+    let iframe = document.getElementById('rapidboy-print-iframe');
+    if (iframe) iframe.remove();
+
+    iframe = document.createElement('iframe');
+    iframe.id = 'rapidboy-print-iframe';
+    iframe.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8"><title>Thermal - ${ticket.ticketNumber}</title>
+        <style>
+          @page { size: 58mm auto; margin: 2mm; }
+          body { font-family: 'Courier New', monospace; font-size: 8pt; width: 54mm; margin: 0; padding: 0; color: #000; }
+          h3 { text-align: center; font-size: 10pt; margin: 4px 0; }
+          .line { border-bottom: 1px dashed #000; margin: 4px 0; }
+        </style>
+      </head>
+      <body>
+        <h3>RAPID BOY SERVICE</h3>
+        <div style="text-align: center; font-size: 7.5pt;">Thanjavur • Ph: 9677600190</div>
+        <div class="line"></div>
+        <div><strong>Ticket:</strong> ${ticket.ticketNumber}</div>
+        <div><strong>Customer:</strong> ${ticket.customerName}</div>
+        <div><strong>Phone:</strong> ${ticket.phoneNumber}</div>
+        <div><strong>Device:</strong> ${ticket.deviceType} (${ticket.brand})</div>
+        <div class="line"></div>
+        <div><strong>Issue:</strong> ${ticket.issue}</div>
+        <div><strong>Final Cost:</strong> ₹${ticket.finalCost || 0}</div>
+        <div><strong>Status:</strong> ${ticket.status}</div>
+        <div class="line"></div>
+        <div style="text-align: center; font-size: 7pt; margin-top: 4px;">Thank you for your business!</div>
+      </body>
+      </html>
+    `);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
+  };
 
 })(window.RapidBoy);
 
 /**
- * Grid Card Matrix Attachment (V4.6 using paymentHistory for Balance & Accurate Mark Paid)
+ * Grid Card Matrix Attachment (V4.6 using paymentHistory for Balance & Accurate Mark Paid with Legacy Fallback)
  */
 (function (App) {
   'use strict';
@@ -416,17 +509,20 @@ window.RapidBoy = window.RapidBoy || {};
 
       const rawTicketNum = ticket.ticketNumber ? String(ticket.ticketNumber).trim() : '';
 
-      // Compute total paid from paymentHistory accurately
+      // Compute total paid from paymentHistory accurately with legacy fallback support
       let totalPaid = 0;
       let historyArr = [];
       if (ticket.paymentHistory) {
         try {
           historyArr = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
         } catch (e) { historyArr = []; }
-      } else {
-        totalPaid = parseFloat(ticket.advance) || 0;
       }
-      historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
+      
+      if (historyArr.length === 0 && ticket.advance && parseFloat(ticket.advance) > 0) {
+        totalPaid = parseFloat(ticket.advance) || 0;
+      } else {
+        historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
+      }
 
       const finalCost = parseFloat(ticket.finalCost) || 0;
       const balanceDue = Math.max(0, finalCost - totalPaid);
@@ -491,21 +587,31 @@ window.RapidBoy = window.RapidBoy || {};
   };
 
   /**
-   * 💰 Mark Payment Received with local timezone dateISO support
+   * 💰 Mark Payment Received with robust legacy advance migration to paymentHistory
    */
   App.Tickets.markPaymentReceived = async function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
 
-    let totalPaid = 0;
     let historyArr = [];
     if (ticket.paymentHistory) {
       try {
         historyArr = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
       } catch(e) { historyArr = []; }
-    } else {
-      totalPaid = parseFloat(ticket.advance) || 0;
     }
+
+    // Migrate legacy advance if history array is empty but advance exists
+    if (historyArr.length === 0 && ticket.advance && parseFloat(ticket.advance) > 0) {
+      historyArr.push({
+        amount: parseFloat(ticket.advance),
+        mode: ticket.paymentMethod || "Cash",
+        receiver: "System (Legacy)",
+        dateISO: new Date().toISOString().split('T')[0],
+        dateTime: "Legacy Advance"
+      });
+    }
+
+    let totalPaid = 0;
     historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
 
     const finalCost = parseFloat(ticket.finalCost) || 0;
