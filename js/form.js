@@ -1,6 +1,7 @@
+
 /**
  * Rapid Boy Service Manager Pro V4.6 - Form Engine & Payment Ledger
- * Supports Issue-wise Min/Max Estimation, Part Payments History, & Backward-Compatible Payload
+ * Fully Integrated with Balance Due Calculation, Part Payments, and Issue Min/Max Estimation
  */
 
 window.RapidBoy = window.RapidBoy || {};
@@ -32,6 +33,7 @@ window.RapidBoy = window.RapidBoy || {};
         paymentHistoryCollection = [];
         App.Form.renderDynamicIssuesChecklist();
         App.Form.renderPaymentHistoryTable();
+        App.Form.recalculateLedgerTotals();
         const spareContainer = document.getElementById('dynamic-spare-parts-container');
         if (spareContainer) spareContainer.innerHTML = '';
         const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
@@ -59,6 +61,14 @@ window.RapidBoy = window.RapidBoy || {};
           if (maxCostInput) maxCostInput.value = "";
           App.Form.renderDynamicIssuesChecklist();
         }
+      });
+    }
+
+    // Final Cost Change Listener to recalculate Balance Due
+    const finalCostInput = document.getElementById('form-final-cost');
+    if (finalCostInput) {
+      finalCostInput.addEventListener('input', () => {
+        App.Form.recalculateLedgerTotals();
       });
     }
 
@@ -231,6 +241,9 @@ window.RapidBoy = window.RapidBoy || {};
     App.Form.recalculateLedgerTotals();
   };
 
+  /**
+   * 🧮 Recalculate Total Advance & Balance Due Correctly
+   */
   App.Form.recalculateLedgerTotals = function () {
     let totalPaid = 0;
     paymentHistoryCollection.forEach(p => totalPaid += Number(p.amount || 0));
@@ -239,7 +252,12 @@ window.RapidBoy = window.RapidBoy || {};
     if (advanceField) advanceField.value = totalPaid;
 
     const finalCost = parseFloat(document.getElementById('form-final-cost')?.value) || 0;
-    const balanceField = document.getElementById('form-balance-due'); // if present
+    const balanceDue = Math.max(0, finalCost - totalPaid);
+
+    const balanceField = document.getElementById('form-balance-due');
+    if (balanceField) {
+      balanceField.value = balanceDue;
+    }
   };
 
   App.Form.addSparePartRow = function (nameVal = "", costVal = "") {
@@ -668,6 +686,7 @@ window.RapidBoy = window.RapidBoy || {};
       setVal('form-estimation-to', ticket.estimationTo || 0);
       setVal('form-final-cost', ticket.finalCost || 0);
       setVal('form-advance', ticket.advance || 0);
+      App.Form.recalculateLedgerTotals();
 
       setVal('form-remarks', ticket.remarks || "");
       setVal('form-private-tech-notes', ticket.privateTechNotes || "");
