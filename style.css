@@ -1,0 +1,847 @@
+/* ==========================================================================
+ *  RAPID BOY PRO V4.5 - FUTURISTIC CYBER TECH THEME VARIABLE GLOBAL ROOT
+ *  ========================================================================== */
+:root {
+    /* High-Contrast Cyber Palette Setup Profiles */
+    --bg-main: #05070c;
+    --bg-surface: #0b0f19;
+    --bg-surface-elevated: #111827;
+
+    /* Neon Cyan & Premium Accents Design System */
+    --accent-cyan: #06b6d4;
+    --accent-cyan-glow: rgba(6, 182, 212, 0.35);
+    --accent-primary: #6366f1;
+    --accent-primary-glow: rgba(99, 102, 241, 0.25);
+    --accent-violet-glow: rgba(168, 85, 247, 0.2);
+    --accent-magenta: #d946ef;
+
+    /* Status Signals Real Time Logs Markers */
+    --accent-success: #10b981;
+    --accent-success-glow: rgba(16, 185, 129, 0.2);
+    --accent-warning: #f59e0b;
+    --accent-error: #ef4444;
+
+    /* Typography Layers Text Colors Configurations */
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dark: #020617;
+
+    /* Glassmorphic Structural Boundaries Dimensions Definitions */
+    --border-glass: rgba(255, 255, 255, 0.05);
+    --border-glow: rgba(6, 182, 212, 0.15);
+    --glass-gradient: linear-gradient(135deg, rgba(11, 15, 25, 0.7) 0%, rgba(5, 7, 12, 0.8) 100%);
+    --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+ *  1. SYSTEM BASE RESET & INDUSTRIAL GENERAL DIRECTIVES
+ *  ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    line-height: 1.5;
+    background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
+.wrapper-hidden { display: none !important; }
+.hidden-element { display: none !important; }
+
+/* Option dropdown dark theme readability fix */
+select option {
+    background-color: #0b0f19 !important;
+    color: #f1f5f9 !important;
+}
+
+/* ==========================================================================
+ *  2. APPLICATION LAYER HEADINGS & FONTS GRID STRUCTURAL TYPOGRAPHY
+ *  ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.025em;
+}
+
+p {
+    color: var(--text-muted);
+}
+
+code, select, textarea, input, .monospace-text {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Web Scrollbar Blueprint Layout */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.2);
+}
+
+/* ==========================================================================
+ *  3. GLOBAL APPLICATION INITIALIZATION BACKGROUND LAYER LOADER SCREEN
+ *  ========================================================================== */
+.global-loader {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-main);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.spinner-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-spinner {
+    border: 3px solid rgba(6, 182, 212, 0.1);
+    border-top-color: var(--accent-cyan);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    animation: spinLoader 0.8s linear infinite;
+}
+
+@keyframes spinLoader {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-logo-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: 2px;
+    margin-top: 15px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+}
+
+.loader-sub-text {
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+ *  4. GATEKEEPER OPERATIONAL SECURITY GATE SCREEN (AUTHENTICATION VIEW)
+ *  ========================================================================== */
+.auth-screen {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    z-index: 10;
+}
+
+.auth-card {
+    background: var(--glass-gradient);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-premium), 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+}
+
+.auth-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-primary));
+    border-radius: 16px 16px 0 0;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.auth-brand-icon {
+    font-size: 3.2rem;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 20px var(--accent-cyan-glow);
+    margin-bottom: 12px;
+}
+
+.auth-header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.auth-header p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ==========================================================================
+ *  5. WORKSPACE HUB CONTROL TELEMETRY NAVIGATION STICKY HEADER
+ *  ========================================================================== */
+.app-workspace {
+    width: 100%;
+    min-height: 100vh;
+    padding-top: 75px;
+    padding-bottom: 95px;
+}
+
+.app-header {
+    position: fixed;
+    top: 0; left: 0; right: 0; height: 75px;
+    background: rgba(11, 15, 25, 0.8);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 999;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.app-logo-icon {
+    font-size: 2.4rem;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 15px var(--accent-cyan-glow);
+}
+
+.brand-meta h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.system-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: 1.5px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.user-meta-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid var(--border-glass);
+}
+
+.user-meta-profile span { color: var(--accent-cyan); }
+.profile-details { display: flex; flex-direction: column; }
+.user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; }
+.user-role { font-size: 0.72rem; color: var(--text-muted); }
+
+/* ==========================================================================
+ *  6. MAIN PANEL CORE WORKSPACE CONTROLS HUD MAIN VIEWPORT
+ *  ========================================================================== */
+.workspace-viewport {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 30px;
+    width: 100%;
+}
+
+.app-view {
+    display: none;
+    width: 100%;
+}
+
+.dynamic-view-active {
+    display: block !important;
+}
+
+.view-title-row {
+    margin-bottom: 35px;
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.view-title-row h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.view-title-row p { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ==========================================================================
+ *  7. DASHBOARD METRICS TRACKERS: FINANCIAL LEDGER LAYERS
+ *  ========================================================================== */
+.financial-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 35px;
+}
+
+.fin-card {
+    background: var(--glass-gradient);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: var(--shadow-premium);
+    transition: var(--transition-smooth);
+}
+
+.fin-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-glow);
+    box-shadow: 0 16px 40px rgba(6, 182, 212, 0.08);
+}
+
+.fin-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.fin-card-header .icon-box {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-glass);
+}
+
+.fin-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.1rem;
+    font-weight: 700;
+}
+
+.revenue-card .fin-value { color: var(--accent-cyan); text-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
+.collection-card .fin-value { color: var(--accent-magenta); }
+.shift-card .fin-value { color: var(--accent-success); }
+
+.status-counters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: var(--glass-gradient);
+    border: 1px solid var(--border-glass);
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-premium);
+    transition: var(--transition-smooth);
+    cursor: pointer;
+    text-align: center;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(6, 182, 212, 0.25);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.stat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.text-blue { color: #60a5fa; }
+.text-red { color: #ef4444; }
+.text-orange { color: #f59e0b; }
+.text-green { color: #10b981; }
+.text-yellow { color: #eab308; }
+.text-purple { color: #a855f7; }
+.text-cyan { color: #06b6d4; }
+.text-magenta { color: #d946ef; }
+.text-teal { color: #14b8a6; }
+
+/* ==========================================================================
+ *  8. FILTER SEARCH CONSOLE DOCKS CONTROL COMPONENT PANELS
+ *  ========================================================================== */
+.search-filter-control-dock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+}
+
+.search-input-wrapper input {
+    width: 100%; height: 50px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    padding: 0 16px 0 48px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    transition: var(--transition-smooth);
+}
+
+.search-input-wrapper input:focus {
+    outline: none; border-color: var(--accent-cyan);
+    box-shadow: 0 0 15px var(--accent-cyan-glow);
+}
+
+.search-icon { position: absolute; left: 16px; top: 15px; color: var(--text-muted); }
+
+.clear-search-btn {
+    position: absolute; right: 16px; top: 15px; background: transparent; border: none;
+    color: var(--text-muted); cursor: pointer; display: flex; align-items: center;
+}
+.clear-search-btn:hover { color: var(--accent-error); }
+
+.filter-dropdown-wrapper {
+    position: relative; min-width: 220px;
+}
+
+.filter-dropdown-wrapper select {
+    width: 100%; height: 50px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    padding: 0 16px 0 48px;
+    color: var(--text-main);
+    font-size: 0.88rem;
+    appearance: none; outline: none; cursor: pointer;
+    transition: var(--transition-smooth);
+}
+.filter-dropdown-wrapper select:focus { border-color: var(--accent-primary); box-shadow: 0 0 12px var(--accent-primary-glow); }
+
+.filter-icon { position: absolute; left: 16px; top: 15px; color: var(--text-muted); pointer-events: none; }
+
+/* ==========================================================================
+ *  9. DEVICE INWARD DATA TRACKING SYSTEM GRIDS (CARDS LISTING)
+ *  ========================================================================== */
+.tickets-render-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+.ticket-data-node-card {
+    background: var(--glass-gradient);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-premium);
+    transition: var(--transition-smooth);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ticket-data-node-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(6, 182, 212, 0.25);
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.6), 0 0 24px rgba(6, 182, 212, 0.04);
+}
+
+.node-card-top-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding-bottom: 12px;
+}
+
+.node-id-block h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+}
+
+.node-inward-id { font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px; }
+
+.node-client-block { margin-bottom: 14px; }
+.node-client-name { display: block; font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; color: #f8fafc; }
+.node-client-type { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+.node-device-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    margin-bottom: 10px;
+}
+
+.node-financials-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.node-price-tag { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; }
+
+.empty-state-card {
+    grid-column: 1 / -1; width: 100%; padding: 60px 20px; text-align: center;
+    background: var(--glass-gradient); border: 1px solid var(--border-glass); border-radius: 16px;
+}
+
+/* ==========================================================================
+ *  10. GLASSMORPHIC MUTATIONS REGISTRY DATA INPUT FORMS
+ *  ========================================================================== */
+.glassmorphic-form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+}
+
+.form-section-card {
+    background: var(--glass-gradient);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: var(--shadow-premium);
+}
+
+.section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 12px;
+}
+
+.section-card-header span { color: var(--accent-cyan); font-size: 1.4rem; }
+.section-card-header h3 { font-size: 1.1rem; font-weight: 700; }
+
+.form-fields-row-triple {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.form-fields-row-double {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    background: rgba(5, 7, 12, 0.5);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    padding: 15px 16px 15px 46px;
+    color: var(--text-main);
+    font-size: 0.92rem;
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+.input-group textarea { padding-left: 16px; resize: vertical; }
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px var(--accent-cyan-glow);
+    background: var(--bg-surface);
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px; top: 16px;
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    transition: color 0.2s;
+}
+
+.input-group label {
+    position: absolute;
+    left: 46px; top: 16px;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    pointer-events: none;
+    transition: var(--transition-smooth);
+}
+
+.input-group textarea ~ label { left: 16px; }
+
+.input-group input:focus ~ label,
+.input-group input:not(:placeholder-shown) ~ label,
+.input-group textarea:focus ~ label,
+.input-group textarea:not(:placeholder-shown) ~ label {
+    top: -11px; left: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    background: var(--bg-surface-elevated);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-glass);
+}
+
+.select-label-fix {
+    top: -11px !important; left: 12px !important;
+    font-size: 0.75rem !important; font-weight: 700 !important;
+    color: var(--accent-cyan) !important;
+    background: var(--bg-surface-elevated) !important;
+    padding: 2px 8px !important; border-radius: 4px;
+    border: 1px solid var(--border-glass);
+}
+
+.accessory-selection-area { margin-top: 18px; }
+.accessory-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: block; }
+
+.accessory-checkbox-grid {
+    display: flex; flex-wrap: wrap; gap: 10px;
+}
+
+.checkbox-tag-pill { cursor: pointer; position: relative; }
+.checkbox-tag-pill input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.checkbox-tag-pill span {
+    display: inline-block; padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+    color: var(--text-muted); transition: var(--transition-smooth);
+}
+
+.checkbox-tag-pill input[type="checkbox"]:checked + span {
+    background: rgba(6, 182, 212, 0.1);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+}
+
+/* ==========================================================================
+ *  11. SYSTEM PHASES CONTROL: TACTICAL BADGES (STATUS PILLS)
+ *  ========================================================================== */
+.status-pill {
+    display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; border: 1px solid transparent;
+}
+
+.pill-Pending { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); color: var(--accent-warning); }
+.pill-Repairing { background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); color: var(--accent-primary); }
+.pill-ReadyforDelivery { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-success); }
+.pill-Delivered { background: rgba(255, 255, 255, 0.05); border-color: var(--border-glass); color: var(--text-muted); }
+.pill-Cancelled { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); color: var(--accent-error); }
+
+/* ==========================================================================
+ *  12. CONTROL TRIGGER COMMAND BUTTONS SPECIFICATIONS
+ *  ========================================================================== */
+.btn {
+    height: 44px; padding: 0 24px;
+    border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; border: 1px solid transparent; transition: var(--transition-smooth);
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--accent-primary), #4f46e5);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+}
+
+.btn-small { height: 34px; padding: 0 14px; font-size: 0.78rem; border-radius: 6px; }
+.btn-full { width: 100%; }
+
+.btn-icon-round {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main);
+    transition: var(--transition-smooth);
+}
+
+.btn-icon-round-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
+
+.form-actions-footer-bar {
+    display: flex; align-items: center; justify-content: flex-end; gap: 14px;
+    margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px;
+}
+
+/* ==========================================================================
+ *  13. FLOATING SYSTEM DECK: PORT HUD BOTTOM SPA NAVIGATION DECK
+ *  ========================================================================== */
+.bottom-app-navigation-dock {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(11, 15, 25, 0.85); border: 1px solid var(--border-glass);
+    backdrop-filter: blur(24px); height: 68px; padding: 0 12px;
+    display: flex; align-items: center; gap: 8px; border-radius: 40px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+    z-index: 999;
+}
+
+.nav-dock-item {
+    background: transparent; border: none; height: 46px; padding: 0 18px;
+    border-radius: 23px; display: flex; align-items: center; gap: 8px;
+    color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth);
+}
+
+.item-active {
+    background: rgba(6, 182, 212, 0.1) !important;
+    color: var(--accent-cyan) !important;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+/* ==========================================================================
+ *  14. GLOBAL INSPECTION DETAIL CARDS HANDLERS (MODAL SHEET LAYOUT)
+ *  ========================================================================== */
+.modal-system-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(3, 5, 10, 0.88); backdrop-filter: blur(10px);
+    z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+
+.modal-glass-container-card {
+    background: var(--glass-gradient); border: 1px solid var(--border-glass);
+    width: 100%; max-width: 680px; max-height: 88vh; border-radius: 16px;
+    box-shadow: var(--shadow-premium);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+.modal-layout-header {
+    padding: 20px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex; align-items: center; justify-content: space-between;
+}
+
+.modal-body-scroll-viewport { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-layout-footer-bar { padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: rgba(5,7,12,0.4); }
+
+/* ==========================================================================
+ *  15. LIVE FLOATING SYSTEM WARNINGS (TOAST NOTIFICATIONS)
+ *  ========================================================================== */
+.toast-container { position: fixed; top: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; }
+
+.toast {
+    background: rgba(11, 15, 25, 0.95); border: 1px solid var(--border-glass); backdrop-filter: blur(16px);
+    border-left: 4px solid var(--accent-cyan); padding: 14px 18px; border-radius: 10px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.55); display: flex; align-items: flex-start; gap: 12px; width: 320px;
+}
+
+.toast-success { border-left-color: var(--accent-success); }
+.toast-error { border-left-color: var(--accent-error); }
+.toast-warning { border-left-color: var(--accent-warning); }
+
+.toast-message-content h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 2px; }
+.toast-message-content p { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ==========================================================================
+ *  16. A5 DUAL-PAGE MEDIA PRINTING DIRECTIVES
+ *  ========================================================================== */
+@media print {
+    @page {
+        size: A5 portrait;
+        margin: 4mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    * {
+        color: #000000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    .app-header,
+    .bottom-app-navigation-dock,
+    .toast-container,
+    .global-loader,
+    .search-filter-control-dock,
+    .form-actions-footer-bar,
+    .app-workspace,
+    .auth-screen {
+        display: none !important;
+    }
+}
