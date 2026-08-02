@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rapid Boy Service Manager Pro V4.5</title>
+  <title>Rapid Boy Service Manager Pro V4.6</title>
 
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -27,7 +27,7 @@
       <div class="auth-header">
         <span class="material-icons-round auth-brand-icon">build_circle</span>
         <h1>RAPID BOY PRO</h1>
-        <p>Service Manager Core Engine V4.5</p>
+        <p>Service Manager Core Engine V4.6</p>
       </div>
       <form id="system-auth-form" onsubmit="event.preventDefault();">
         <div class="input-group" style="margin-bottom: 20px;">
@@ -55,7 +55,7 @@
         <span class="material-icons-round app-logo-icon">precision_manufacturing</span>
         <div class="brand-meta">
           <h2>RAPID BOY</h2>
-          <span class="system-tag">SERVICE MANAGER V4.5</span>
+          <span class="system-tag">SERVICE MANAGER V4.6</span>
         </div>
       </div>
       <div class="header-right">
@@ -67,14 +67,14 @@
           </div>
         </div>
         <button id="btn-system-logout" class="btn-icon-round" title="Sign Out">
-          <span class="material-icons-round" style="color: var(--accent-error);">power_settings_new</span>
+          <span class="material-icons-round" style="color: #EF4444;">power_settings_new</span>
         </button>
       </div>
     </header>
 
     <main class="workspace-viewport">
 
-      <!-- 1. Dashboard Analytics View -->
+      <!-- 1. Dashboard View -->
       <section id="view-dashboard-analytics" class="app-view dynamic-view-active">
         <div class="view-title-row">
           <div>
@@ -100,14 +100,14 @@
               <span>PENDING BALANCE DUE</span>
               <div class="icon-box"><span class="material-icons-round">pending_actions</span></div>
             </div>
-            <div id="stat-pending-collection" class="fin-value" style="color: var(--accent-error);">₹0.00</div>
+            <div id="stat-pending-collection" class="fin-value" style="color: var(--status-red);">₹0.00</div>
           </div>
           <div class="fin-card shift-card">
             <div class="fin-card-header">
               <span>TODAY'S LIQUID COLLECTION</span>
               <div class="icon-box"><span class="material-icons-round">savings</span></div>
             </div>
-            <div id="stat-today-collection" class="fin-value" style="color: var(--accent-success);">₹0.00</div>
+            <div id="stat-today-collection" class="fin-value" style="color: var(--status-emerald);">₹0.00</div>
           </div>
         </div>
 
@@ -150,11 +150,11 @@
               <option value="Waiting for Confirmation">Waiting for Confirmation</option>
               <option value="Proceed to Service">Proceed to Service</option>
               <option value="Checking">Checking</option>
-              <option value="Waiting for Parts">Waiting for Parts</option>
+              <option value="Waiting for Parts">Awaiting Parts</option>
               <option value="Repairing">Repairing</option>
               <option value="Testing">Testing</option>
               <option value="Ready for Delivery">Ready for Delivery</option>
-              <option value="Delivered">Delivered</option>
+              <option value="Delivered">Fixed / Delivered</option>
               <option value="Return">Return</option>
               <option value="Cancelled">Cancelled</option>
             </select>
@@ -179,9 +179,11 @@
             <select id="payment-method-filter">
               <option value="ALL">All Payment Modes</option>
               <option value="Cash">Cash</option>
-              <option value="GPay / UPI">GPay / UPI</option>
-              <option value="Card">Card</option>
-              <option value="NetBanking">NetBanking</option>
+              <option value="RapidBoy QR">RapidBoy QR</option>
+              <option value="Carbon QR">Carbon QR</option>
+              <option value="Rapid GPay">Rapid GPay</option>
+              <option value="Carbon GPay">Carbon GPay</option>
+              <option value="Account Transfer">Account Transfer</option>
               <option value="Credit">Credit / Unpaid</option>
             </select>
           </div>
@@ -303,9 +305,9 @@
               </div>
             </div>
 
-            <div style="margin-top: 24px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
+            <div style="margin-top: 24px; border-top: 1px dashed #CBD5E1; padding-top: 16px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">Installed Spare Parts Management</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); text-transform: uppercase;">Installed Spare Parts Management</span>
                 <button type="button" id="add-spare-row-btn" class="btn btn-secondary btn-small">
                   <span class="material-icons-round" style="font-size: 1rem;">add</span>
                   <span>Add Spare Part</span>
@@ -315,16 +317,17 @@
             </div>
           </div>
 
+          <!-- Reported Issues with Separate Min & Max Costs -->
           <div class="form-section-card">
             <div class="section-card-header">
               <span class="material-icons-round">build</span>
-              <h3>Reported Issues & Per-Issue Min/Max Estimation Checklist</h3>
+              <h3>Reported Issues & Issue-wise Min/Max Estimation</h3>
             </div>
 
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-              <input type="text" id="custom-issue-input-field" placeholder="Type issue description..." style="flex: 2; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
-              <input type="number" id="custom-issue-min-cost-field" placeholder="Min Cost (₹)" min="0" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
-              <input type="number" id="custom-issue-max-cost-field" placeholder="Max Cost (₹)" min="0" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
+              <input type="text" id="custom-issue-input-field" placeholder="Type issue (e.g. Display Issue)..." style="flex: 2;">
+              <input type="number" id="custom-issue-min-cost-field" placeholder="Min ₹" min="0" style="flex: 1;">
+              <input type="number" id="custom-issue-max-cost-field" placeholder="Max ₹" min="0" style="flex: 1;">
               <button type="button" id="add-issue-node-trigger" class="btn btn-secondary">
                 <span class="material-icons-round">add</span>
                 <span>Add Issue</span>
@@ -336,37 +339,16 @@
             <div class="accessory-selection-area">
               <span class="accessory-label">Inward Received Accessories Checklist:</span>
               <div id="accessory-checkbox-matrix-grid" class="accessory-checkbox-grid">
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="Charger / Adapter">
-                  <span>Charger / Adapter</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="Power Cable">
-                  <span>Power Cable</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="Battery">
-                  <span>Battery</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="Laptop Bag">
-                  <span>Laptop Bag</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="Mouse">
-                  <span>Mouse</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="RAM Included">
-                  <span>RAM Attached</span>
-                </label>
-                <label class="checkbox-tag-pill">
-                  <input type="checkbox" value="HDD / SSD Attached">
-                  <span>HDD / SSD Attached</span>
-                </label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="Charger / Adapter"><span>Charger / Adapter</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="Power Cable"><span>Power Cable</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="Battery"><span>Battery</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="Laptop Bag"><span>Laptop Bag</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="Mouse"><span>Mouse</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="RAM Included"><span>RAM Attached</span></label>
+                <label class="checkbox-tag-pill"><input type="checkbox" value="HDD / SSD Attached"><span>HDD / SSD Attached</span></label>
               </div>
 
-              <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
+              <div style="margin-top: 20px; border-top: 1px dashed #CBD5E1; padding-top: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                   <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Accessories Serial Numbers (Unlimited):</span>
                   <button type="button" id="add-accessory-serial-row-btn" class="btn btn-secondary btn-small">
@@ -379,22 +361,23 @@
             </div>
           </div>
 
+          <!-- Financial Estimate & Received Payment System -->
           <div class="form-section-card">
             <div class="section-card-header">
               <span class="material-icons-round">payments</span>
-              <h3>Financial Estimate & Payment Ledger</h3>
+              <h3>Financial Estimate & Payment History Ledger</h3>
             </div>
 
             <div class="form-fields-row-double">
               <div class="input-group">
-                <input type="number" id="form-estimation-from" placeholder=" " min="0" value="0">
-                <label for="form-estimation-from">Est. From (₹) [Auto-Calculated]</label>
+                <input type="number" id="form-estimation-from" placeholder=" " min="0" value="0" readonly style="background: #F1F5F9;">
+                <label for="form-estimation-from">Final Estimation From (₹)</label>
                 <span class="material-icons-round input-icon">currency_rupee</span>
               </div>
 
               <div class="input-group">
-                <input type="number" id="form-estimation-to" placeholder=" " min="0" value="0">
-                <label for="form-estimation-to">Est. To (₹) [Auto-Calculated]</label>
+                <input type="number" id="form-estimation-to" placeholder=" " min="0" value="0" readonly style="background: #F1F5F9;">
+                <label for="form-estimation-to">Final Estimation To (₹)</label>
                 <span class="material-icons-round input-icon">currency_rupee</span>
               </div>
             </div>
@@ -402,53 +385,30 @@
             <div class="form-fields-row-double" style="margin-top: 20px;">
               <div class="input-group">
                 <input type="number" id="form-final-cost" placeholder=" " min="0" value="0">
-                <label for="form-final-cost">Final Service Cost (₹)</label>
+                <label for="form-final-cost">Final Agreed Service Cost (₹)</label>
                 <span class="material-icons-round input-icon">payments</span>
               </div>
 
               <div class="input-group">
-                <input type="number" id="form-advance" placeholder=" " min="0" value="0">
-                <label for="form-advance">Advance Deposit Paid (₹)</label>
+                <input type="number" id="form-advance" placeholder=" " min="0" value="0" readonly style="background: #F1F5F9;">
+                <label for="form-advance">Total Received Paid (₹)</label>
                 <span class="material-icons-round input-icon">savings</span>
               </div>
             </div>
 
-            <div class="form-fields-row-triple" style="margin-top: 20px;">
-              <div class="input-group">
-                <select id="form-payment-method" required>
-                  <option value="Cash">Cash</option>
-                  <option value="GPay / UPI">GPay / UPI</option>
-                  <option value="Card">Card</option>
-                  <option value="NetBanking">NetBanking</option>
-                  <option value="Credit">Credit / Unpaid</option>
-                </select>
-                <label class="select-label-fix">Payment Mode</label>
-                <span class="material-icons-round input-icon">credit_card</span>
+            <!-- 💰 Received Payment Button Section -->
+            <div style="margin-top: 20px; background: #EFF6FF; border: 1px dashed #2563EB; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--accent-primary); font-size: 0.95rem; display: block;">Part-Payments / Advance Ledger</strong>
+                <span style="font-size: 0.8rem; color: #64748B;">Record multiple payments with mode tracking and history preservation.</span>
               </div>
-
-              <div id="wrapper-cash-receiver" class="input-group">
-                <select id="form-cash-receiver">
-                  <option value="Anand">Anand</option>
-                  <option value="Selva">Selva</option>
-                  <option value="Zaffar">Zaffar</option>
-                  <option value="Kathir">Kathir</option>
-                  <option value="Mani">Mani</option>
-                  <option value="Munesh">Munesh</option>
-                  <option value="Murugan">Murugan</option>
-                </select>
-                <label class="select-label-fix">Cash Received By</label>
-                <span class="material-icons-round input-icon">person</span>
-              </div>
-
-              <div id="wrapper-upi-qr-type" class="input-group" style="display: none;">
-                <select id="form-upi-qr-type">
-                  <option value="Rapidboy QR">Rapidboy QR Account</option>
-                  <option value="Carbon QR">Carbon QR Account</option>
-                </select>
-                <label class="select-label-fix">GPay QR Gateway</label>
-                <span class="material-icons-round input-icon">qr_code</span>
-              </div>
+              <button type="button" id="trigger-receive-payment-modal" class="btn btn-primary btn-small">
+                <span class="material-icons-round">payments</span>
+                <span>💰 Received Payment</span>
+              </button>
             </div>
+
+            <div id="payment-history-table-mount" style="margin-top: 14px;"></div>
           </div>
 
           <div class="form-section-card">
@@ -464,11 +424,11 @@
                   <option value="Waiting for Confirmation">Waiting for Confirmation</option>
                   <option value="Proceed to Service">Proceed to Service</option>
                   <option value="Checking">Checking</option>
-                  <option value="Waiting for Parts">Waiting for Parts</option>
+                  <option value="Waiting for Parts">Awaiting Parts</option>
                   <option value="Repairing">Repairing</option>
                   <option value="Testing">Testing</option>
                   <option value="Ready for Delivery">Ready for Delivery</option>
-                  <option value="Delivered">Delivered</option>
+                  <option value="Delivered">Fixed / Delivered</option>
                   <option value="Return">Return</option>
                   <option value="Cancelled">Cancelled</option>
                 </select>
@@ -479,34 +439,13 @@
               <div class="accessory-selection-area" style="margin: 0;">
                 <span class="accessory-label">Assign Engineers (Multi-Select):</span>
                 <div id="technician-checkbox-matrix-grid" class="accessory-checkbox-grid">
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Anand">
-                    <span>Anand</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Selva">
-                    <span>Selva</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Zaffar">
-                    <span>Zaffar</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Kathir">
-                    <span>Kathir</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Mani">
-                    <span>Mani</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Munesh">
-                    <span>Munesh</span>
-                  </label>
-                  <label class="checkbox-tag-pill">
-                    <input type="checkbox" name="tech-nodes" value="Murugan">
-                    <span>Murugan</span>
-                  </label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Anand"><span>Anand</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Selva"><span>Selva</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Zaffar"><span>Zaffar</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Kathir"><span>Kathir</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Mani"><span>Mani</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Munesh"><span>Munesh</span></label>
+                  <label class="checkbox-tag-pill"><input type="checkbox" name="tech-nodes" value="Murugan"><span>Murugan</span></label>
                 </div>
               </div>
             </div>
@@ -518,8 +457,8 @@
               </div>
 
               <div class="input-group">
-                <textarea id="form-private-tech-notes" rows="2" placeholder=" " style="border-color: rgba(217, 70, 239, 0.4);"></textarea>
-                <label for="form-private-tech-notes" style="color: var(--accent-magenta);">🔒 Private Tech Notes (Internal Only)</label>
+                <textarea id="form-private-tech-notes" rows="2" placeholder=" " style="border-color: #D946EF;"></textarea>
+                <label for="form-private-tech-notes" style="color: #D946EF;">🔒 Private Tech Notes (Internal Only)</label>
               </div>
             </div>
 
@@ -546,6 +485,7 @@
 
     </main>
 
+    <!-- Always Visible Fixed Bottom Navigation Bar -->
     <nav class="bottom-app-navigation-dock">
       <button class="nav-dock-item item-active" data-view-target="view-dashboard-analytics">
         <span class="material-icons-round">dashboard</span>
@@ -553,19 +493,20 @@
       </button>
       <button class="nav-dock-item" data-view-target="view-tickets-list">
         <span class="material-icons-round">assignment</span>
-        <span class="nav-item-text">Registry</span>
+        <span class="nav-item-text">Tickets</span>
       </button>
       <button class="nav-dock-item" data-view-target="view-ticket-form">
         <span class="material-icons-round">add_circle</span>
-        <span class="nav-item-text">New Order</span>
+        <span class="nav-item-text">New Work Order</span>
       </button>
     </nav>
+
   </div>
 
   <div id="global-system-modal-overlay" class="modal-system-overlay wrapper-hidden">
     <div class="modal-glass-container-card">
       <div class="modal-layout-header">
-        <h3 id="modal-card-title-string">Audit Trail</h3>
+        <h3 id="modal-card-title-string">System Dialog</h3>
         <button id="modal-close-trigger-x" class="btn-icon-round-close">
           <span class="material-icons-round">close</span>
         </button>
