@@ -400,6 +400,346 @@
               <div class="input-group">
                 <input type="number" id="form-final-cost" placeholder=" " min="0" value="0">
                 <label for="form-final-cost">Final Service Cost (₹)</label>
+                <span class="material-icons-round input-icon">payments<          <span class="material-icons-round">account_circle</span>
+          <div class="profile-details">
+            <span id="display-logged-user-name" class="user-name">Operator</span>
+            <span id="display-logged-user-role" class="user-role">Administrator</span>
+          </div>
+        </div>
+        <button id="btn-system-logout" class="btn-icon-round" title="Sign Out">
+          <span class="material-icons-round" style="color: var(--accent-error);">power_settings_new</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace-viewport">
+
+      <section id="view-dashboard-analytics" class="app-view dynamic-view-active">
+        <div class="view-title-row">
+          <div>
+            <h1>Executive Telemetry</h1>
+            <p>Real-time service ledger metrics & financial indicators</p>
+          </div>
+          <button class="btn btn-secondary btn-small" onclick="window.RapidBoy.UI.refreshGlobalDataStream(true)">
+            <span class="material-icons-round">sync</span>
+            <span>Sync Ledger</span>
+          </button>
+        </div>
+
+        <div class="financial-cards-grid">
+          <div class="fin-card revenue-card">
+            <div class="fin-card-header">
+              <span>TOTAL ESTIMATED REVENUE</span>
+              <div class="icon-box"><span class="material-icons-round">payments</span></div>
+            </div>
+            <div id="stat-total-revenue" class="fin-value">₹0.00</div>
+          </div>
+          <div class="fin-card collection-card">
+            <div class="fin-card-header">
+              <span>PENDING BALANCE DUE</span>
+              <div class="icon-box"><span class="material-icons-round">pending_actions</span></div>
+            </div>
+            <div id="stat-pending-collection" class="fin-value" style="color: var(--accent-error);">₹0.00</div>
+          </div>
+          <div class="fin-card shift-card">
+            <div class="fin-card-header">
+              <span>TODAY'S LIQUID COLLECTION</span>
+              <div class="icon-box"><span class="material-icons-round">savings</span></div>
+            </div>
+            <div id="stat-today-collection" class="fin-value" style="color: var(--accent-success);">₹0.00</div>
+          </div>
+        </div>
+
+        <div id="dashboard-status-counters-mount" class="status-counters-grid"></div>
+      </section>
+
+      <section id="view-tickets-list" class="app-view">
+        <div class="view-title-row">
+          <div>
+            <h1>Work Order Registry</h1>
+            <p>Live devices inward inspection and lifecycle tracking</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button id="admin-export-btn" class="btn btn-secondary wrapper-hidden" onclick="window.RapidBoy.UI.exportFilteredTicketsCSV()">
+              <span class="material-icons-round">download</span>
+              <span>Export Filtered Data</span>
+            </button>
+            <button class="btn btn-primary" onclick="window.RapidBoy.Navigation.navigateTo('view-ticket-form')">
+              <span class="material-icons-round">add_circle</span>
+              <span>New Work Order</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="search-filter-control-dock">
+          <div class="search-input-wrapper">
+            <span class="material-icons-round search-icon">search</span>
+            <input type="text" id="global-search-input" placeholder="Search Ticket No, Customer Name, Phone, Device, Serial..." autocomplete="off">
+            <button id="clear-search-btn" class="clear-search-btn hidden-element">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+
+          <div class="filter-dropdown-wrapper">
+            <span class="material-icons-round filter-icon">filter_alt</span>
+            <select id="status-filter-dropdown">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Waiting for Confirmation">Waiting for Confirmation</option>
+              <option value="Proceed to Service">Proceed to Service</option>
+              <option value="Checking">Checking</option>
+              <option value="Waiting for Parts">Waiting for Parts</option>
+              <option value="Repairing">Repairing</option>
+              <option value="Testing">Testing</option>
+              <option value="Ready for Delivery">Ready for Delivery</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Return">Return</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="filter-dropdown-wrapper">
+            <span class="material-icons-round filter-icon">badge</span>
+            <select id="technician-filter-dropdown">
+              <option value="ALL">All Technicians</option>
+              <option value="Anand">Anand</option>
+              <option value="Selva">Selva</option>
+              <option value="Zaffar">Zaffar</option>
+              <option value="Kathir">Kathir</option>
+              <option value="Mani">Mani</option>
+              <option value="Munesh">Munesh</option>
+              <option value="Murugan">Murugan</option>
+            </select>
+          </div>
+
+          <div class="filter-dropdown-wrapper">
+            <span class="material-icons-round filter-icon">account_balance_wallet</span>
+            <select id="payment-method-filter">
+              <option value="ALL">All Payment Modes</option>
+              <option value="Cash">Cash</option>
+              <option value="GPay / UPI">GPay / UPI</option>
+              <option value="Card">Card</option>
+              <option value="NetBanking">NetBanking</option>
+              <option value="Credit">Credit / Unpaid</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="tickets-render-grid" class="tickets-render-grid-container"></div>
+      </section>
+
+      <section id="view-ticket-form" class="app-view">
+        <div class="view-title-row">
+          <div>
+            <h1 id="ticket-form-title-heading">New Work Order Entry</h1>
+            <p>Register device inward, customer specs, and diagnostic estimates</p>
+          </div>
+          <button class="btn btn-secondary" onclick="window.RapidBoy.Navigation.navigateTo('view-tickets-list')">
+            <span class="material-icons-round">arrow_back</span>
+            <span>Back to Registry</span>
+          </button>
+        </div>
+
+        <form id="master-ticket-operational-form" class="glassmorphic-form-layout">
+          <input type="hidden" id="form-operation-mode" value="CREATE">
+          <input type="hidden" id="form-ticket-id-hidden" value="">
+
+          <div class="form-section-card">
+            <div class="section-card-header">
+              <span class="material-icons-round">person_add</span>
+              <h3>Customer Classification & Contacts</h3>
+            </div>
+
+            <div class="form-fields-row-double">
+              <div class="input-group">
+                <select id="form-customer-type" required>
+                  <option value="Customer">Customer (Retail)</option>
+                  <option value="Dealer">Dealer (B2B)</option>
+                  <option value="Carbon">Carbon</option>
+                  <option value="Pet Panda">Pet Panda</option>
+                </select>
+                <label class="select-label-fix">Customer Type</label>
+                <span class="material-icons-round input-icon">groups</span>
+              </div>
+
+              <div class="input-group">
+                <input type="text" id="form-customer-name" placeholder=" " required autocomplete="off">
+                <label for="form-customer-name">Customer / Dealer Name</label>
+                <span class="material-icons-round input-icon">badge</span>
+              </div>
+            </div>
+
+            <div class="form-fields-row-double" style="margin-top: 20px;">
+              <div class="input-group">
+                <input type="tel" id="form-phone-number" placeholder=" " required autocomplete="off" pattern="[0-9]{10}">
+                <label for="form-phone-number">Primary Phone Number (10 Digits)</label>
+                <span class="material-icons-round input-icon">call</span>
+              </div>
+
+              <div class="input-group">
+                <input type="tel" id="form-whatsapp-number" placeholder=" " autocomplete="off">
+                <label for="form-whatsapp-number">WhatsApp Number (Optional)</label>
+                <span class="material-icons-round input-icon">chat</span>
+              </div>
+            </div>
+
+            <div class="form-fields-row-double" style="margin-top: 20px;">
+              <div class="input-group">
+                <input type="text" id="form-referral-person" placeholder=" " autocomplete="off">
+                <label for="form-referral-person">Referral Person (Optional)</label>
+                <span class="material-icons-round input-icon">person_add_alt_1</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-card-header">
+              <span class="material-icons-round">devices</span>
+              <h3>Hardware Device Specifications & Multiple Spare Parts</h3>
+            </div>
+
+            <div class="form-fields-row-triple">
+              <div class="input-group">
+                <select id="form-device-type" required>
+                  <option value="Laptop">Laptop</option>
+                  <option value="Desktop">Desktop</option>
+                  <option value="Printer">Printer</option>
+                  <option value="CCTV">Circon / CCTV</option>
+                  <option value="Monitors">Monitor / Display</option>
+                  <option value="Hardware Parts">Parts / Accessories</option>
+                  <option value="Mobile/Tab">Tablet / Handheld</option>
+                </select>
+                <label class="select-label-fix">Device Category</label>
+                <span class="material-icons-round input-icon">computer</span>
+              </div>
+
+              <div class="input-group">
+                <input type="text" id="form-brand" placeholder=" " required>
+                <label for="form-brand">Brand (Dell, HP, Lenovo, Acer...)</label>
+                <span class="material-icons-round input-icon">branding_watermark</span>
+              </div>
+
+              <div class="input-group">
+                <input type="text" id="form-model" placeholder=" " required>
+                <label for="form-model">Model Name / Number</label>
+                <span class="material-icons-round input-icon">model_training</span>
+              </div>
+            </div>
+
+            <div class="form-fields-row-double" style="margin-top: 20px;">
+              <div class="input-group">
+                <input type="text" id="form-serial-number" placeholder=" ">
+                <label for="form-serial-number">Serial Number / S/N Tag</label>
+                <span class="material-icons-round input-icon">qr_code_2</span>
+              </div>
+
+              <div class="input-group">
+                <input type="text" id="form-delivery-date" placeholder=" " value="2–7 Working Days">
+                <label for="form-delivery-date">Estimated Delivery Timeline</label>
+                <span class="material-icons-round input-icon">event</span>
+              </div>
+            </div>
+
+            <div style="margin-top: 24px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">Installed Spare Parts Management</span>
+                <button type="button" id="add-spare-row-btn" class="btn btn-secondary btn-small">
+                  <span class="material-icons-round" style="font-size: 1rem;">add</span>
+                  <span>Add Spare Part</span>
+                </button>
+              </div>
+              <div id="dynamic-spare-parts-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-card-header">
+              <span class="material-icons-round">build</span>
+              <h3>Reported Issues & Per-Issue Min/Max Estimation Checklist</h3>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <input type="text" id="custom-issue-input-field" placeholder="Type issue description..." style="flex: 2; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
+              <input type="number" id="custom-issue-min-cost-field" placeholder="Min Cost (₹)" min="0" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
+              <input type="number" id="custom-issue-max-cost-field" placeholder="Max Cost (₹)" min="0" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 12px 16px; color: var(--text-main);">
+              <button type="button" id="add-issue-node-trigger" class="btn btn-secondary">
+                <span class="material-icons-round">add</span>
+                <span>Add Issue</span>
+              </button>
+            </div>
+
+            <div id="dynamic-issues-checklist-mount-point" style="margin-top: 14px;"></div>
+
+            <div class="accessory-selection-area">
+              <span class="accessory-label">Inward Received Accessories Checklist:</span>
+              <div id="accessory-checkbox-matrix-grid" class="accessory-checkbox-grid">
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="Charger / Adapter">
+                  <span>Charger / Adapter</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="Power Cable">
+                  <span>Power Cable</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="Battery">
+                  <span>Battery</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="Laptop Bag">
+                  <span>Laptop Bag</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="Mouse">
+                  <span>Mouse</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="RAM Included">
+                  <span>RAM Attached</span>
+                </label>
+                <label class="checkbox-tag-pill">
+                  <input type="checkbox" value="HDD / SSD Attached">
+                  <span>HDD / SSD Attached</span>
+                </label>
+              </div>
+
+              <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Accessories Serial Numbers (Unlimited):</span>
+                  <button type="button" id="add-accessory-serial-row-btn" class="btn btn-secondary btn-small">
+                    <span class="material-icons-round" style="font-size: 1rem;">add</span>
+                    <span>Add Accessory S/N</span>
+                  </button>
+                </div>
+                <div id="dynamic-accessory-serial-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-card-header">
+              <span class="material-icons-round">payments</span>
+              <h3>Financial Estimate & Payment Ledger</h3>
+            </div>
+
+            <div class="form-fields-row-double">
+              <div class="input-group">
+                <input type="number" id="form-estimation-from" placeholder=" " min="0" value="0">
+                <label for="form-estimation-from">Est. From (₹) [Auto-Calculated]</label>
+                <span class="material-icons-round input-icon">currency_rupee</span>
+              </div>
+
+              <div class="input-group">
+                <input type="number" id="form-estimation-to" placeholder=" " min="0" value="0">
+                <label for="form-estimation-to">Est. To (₹) [Auto-Calculated]</label>
+                <span class="material-icons-round input-icon">currency_rupee</span>
+              </div>
+            </div>
+
+            <div class="form-fields-row-double" style="margin-top: 20px;">
+              <div class="input-group">
+                <input type="number" id="form-final-cost" placeholder=" " min="0" value="0">
+                <label for="form-final-cost">Final Service Cost (₹)</label>
                 <span class="material-icons-round input-icon">payments<>Customer Type</label>
                 <span class="material-icons-round input-icon">groups</span>
               </div>
