@@ -11,12 +11,8 @@ window.RapidBoy = window.RapidBoy || {};
 
   App.Form = App.Form || {};
 
-  // Object array to hold issues with status: { text: "Display Issue", minCost: 2500, maxCost: 4000, isDone: false }
   let operationalIssuesCollection = [];
 
-  /**
-   * Initialize Form Events, Interceptors, and Listeners
-   */
   App.Form.init = function () {
     console.log("🚀 Rapid Boy Form Engine V4.5 Active...");
 
@@ -42,14 +38,12 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
-    // Payment Mode Dynamic Field Change Listener
     const paymentSelect = document.getElementById('form-payment-method');
     if (paymentSelect) {
       paymentSelect.addEventListener('change', App.Form.togglePaymentDynamicFields);
       App.Form.togglePaymentDynamicFields();
     }
 
-    // Custom Issue Adder Listener with Min & Max Costs
     const addIssueBtn = document.getElementById('add-issue-node-trigger');
     const issueInput = document.getElementById('custom-issue-input-field');
     const minCostInput = document.getElementById('custom-issue-min-cost-field');
@@ -72,7 +66,6 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
-    // Spare Parts Row Adder Trigger Listener
     const addSpareBtn = document.getElementById('add-spare-row-btn');
     if (addSpareBtn) {
       addSpareBtn.addEventListener('click', (e) => {
@@ -81,7 +74,6 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
-    // Accessory Serial Number Row Adder Trigger Listener
     const addAccSerialBtn = document.getElementById('add-accessory-serial-row-btn');
     if (addAccSerialBtn) {
       addAccSerialBtn.addEventListener('click', (e) => {
@@ -90,13 +82,9 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
-    // Setup Customer Name & Phone Auto-Suggest Portal
     App.Form.setupCustomerAutoSuggest();
   };
 
-  /**
-   * Toggle Cash Receiver & UPI QR dropdowns based on Payment Method
-   */
   App.Form.togglePaymentDynamicFields = function () {
     const paymentSelect = document.getElementById('form-payment-method');
     const cashWrapper = document.getElementById('wrapper-cash-receiver');
@@ -117,9 +105,6 @@ window.RapidBoy = window.RapidBoy || {};
     }
   };
 
-  /**
-   * Add Dynamic Spare Part Input Row
-   */
   App.Form.addSparePartRow = function (nameVal = "", costVal = "") {
     const container = document.getElementById('dynamic-spare-parts-container');
     if (!container) return;
@@ -137,9 +122,6 @@ window.RapidBoy = window.RapidBoy || {};
     container.appendChild(row);
   };
 
-  /**
-   * Add Dynamic Accessory Serial Number Row (Unlimited)
-   */
   App.Form.addAccessorySerialRow = function (nameVal = "", serialVal = "") {
     const container = document.getElementById('dynamic-accessory-serial-container');
     if (!container) return;
@@ -157,9 +139,6 @@ window.RapidBoy = window.RapidBoy || {};
     container.appendChild(row);
   };
 
-  /**
-   * Customer Real-Time Auto-Suggest Dropdown Portal System
-   */
   App.Form.setupCustomerAutoSuggest = function () {
     const nameInput = document.getElementById('form-customer-name');
     const phoneInput = document.getElementById('form-phone-number');
@@ -240,6 +219,220 @@ window.RapidBoy = window.RapidBoy || {};
             const item = document.createElement('div');
             Object.assign(item.style, {
               padding: '10px 14px',
+              cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              fontSize: '0.85rem'
+            });
+
+            item.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#06b6d4;">${App.Utils.sanitizeHTML(c.customerName)}</strong>
+                <span style="font-size:0.75rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; color:#cbd5e1;">${App.Utils.sanitizeHTML(c.customerType)}</span>
+              </div>
+              <div style="color:#94a3b8; font-size:0.78rem; margin-top:2px;">📞 ${App.Utils.sanitizeHTML(c.phoneNumber)}</div>
+            `;
+
+            item.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              const nameF = document.getElementById('form-customer-name');
+              const phoneF = document.getElementById('form-phone-number');
+              const waF = document.getElementById('form-whatsapp-number');
+              const typeF = document.getElementById('form-customer-type');
+              const refF = document.getElementById('form-referral-person');
+
+              if (nameF) nameF.value = c.customerName;
+              if (phoneF) phoneF.value = c.phoneNumber;
+              if (waF) waF.value = c.whatsAppNumber || c.phoneNumber;
+              if (typeF) typeF.value = c.customerType || 'Customer';
+              if (refF) refF.value = c.referralPerson || '';
+
+              suggestBox.style.display = 'none';
+
+              if (App.UI && typeof App.UI.showToast === 'function') {
+                App.UI.showToast("Customer Selected", `Loaded profile for ${c.customerName}`, "info");
+              }
+            });
+
+            suggestBox.appendChild(item);
+          });
+
+          suggestBox.style.display = 'block';
+        } else {
+          suggestBox.style.display = 'none';
+        }
+      });
+
+      inputEl.addEventListener('blur', () => {
+        setTimeout(() => { suggestBox.style.display = 'none'; }, 200);
+      });
+
+      inputEl.addEventListener('focus', function () {
+        if (this.value.trim().length >= 2) {
+          this.dispatchEvent(new Event('input'));
+        }
+      });
+    };
+
+    attachSuggestListener(nameInput);
+    attachSuggestListener(phoneInput);
+  };
+
+  App.Form.renderDynamicIssuesChecklist = function () {
+    const mount = document.getElementById('dynamic-issues-checklist-mount-point');
+    if (!mount) return;
+
+    let totalMinEst = 0;
+    let totalMaxEst = 0;
+
+    if (operationalIssuesCollection.length === 0) {
+      mount.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No active issue profiles attached yet.</div>`;
+    } else {
+      let html = "";
+      operationalIssuesCollection.forEach((issObj, index) => {
+        totalMinEst += Number(issObj.minCost || 0);
+        totalMaxEst += Number(issObj.maxCost || 0);
+
+        const textStyle = issObj.isDone ? "text-decoration: line-through; color: #64748b; font-style: italic;" : "color: #cbd5e1;";
+        const statusBadge = issObj.isDone
+          ? `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; margin-left: 8px;">✓ COMPLETED</span>`
+          : `<span style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: 8px;">PENDING</span>`;
+
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; margin-bottom:6px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="cursor: pointer; flex: 1; display: flex; align-items: center; justify-content: space-between;" onclick="window.RapidBoy.Form.toggleIssueCompletion(${index})">
+              <div style="display: flex; align-items: center;">
+                <span class="material-icons-round" style="font-size: 1.1rem; margin-right: 8px; color: ${issObj.isDone ? '#10b981' : '#64748b'};">
+                  ${issObj.isDone ? 'check_box' : 'check_box_outline_blank'}
+                </span>
+                <span style="font-size:0.88rem; ${textStyle}">${App.Utils.sanitizeHTML(issObj.text)}</span>${statusBadge}
+              </div>
+              <span style="font-size:0.8rem; color: var(--accent-cyan); font-family: monospace; margin-right: 12px;">₹${issObj.minCost || 0} - ₹${issObj.maxCost || 0}</span>
+            </div>
+            <button type="button" style="background:none; border:none; color:#ef4444; cursor:pointer; margin-left: 10px;" onclick="window.RapidBoy.Form.removeIssue(${index})">
+              <span class="material-icons-round" style="font-size:1.1rem;">delete</span>
+            </button>
+          </div>
+        `;
+      });
+      mount.innerHTML = html;
+    }
+
+    const estFromField = document.getElementById('form-estimation-from');
+    const estToField = document.getElementById('form-estimation-to');
+    if (estFromField) estFromField.value = totalMinEst;
+    if (estToField) estToField.value = totalMaxEst;
+  };
+
+  App.Form.toggleIssueCompletion = function (idx) {
+    if (operationalIssuesCollection[idx]) {
+      operationalIssuesCollection[idx].isDone = !operationalIssuesCollection[idx].isDone;
+      App.Form.renderDynamicIssuesChecklist();
+    }
+  };
+
+  App.Form.removeIssue = function (idx) {
+    operationalIssuesCollection.splice(idx, 1);
+    App.Form.renderDynamicIssuesChecklist();
+  };
+
+  App.Form.handleFormSubmission = async function () {
+    const modeEl = document.getElementById('form-operation-mode');
+    const mode = modeEl ? modeEl.value : "CREATE";
+    const ticketIdEl = document.getElementById('form-ticket-id-hidden');
+    const ticketId = ticketIdEl ? ticketIdEl.value : "";
+
+    const finalCost = parseFloat(document.getElementById('form-final-cost')?.value) || 0;
+    const advance = parseFloat(document.getElementById('form-advance')?.value) || 0;
+    const paymentMethod = document.getElementById('form-payment-method') ? document.getElementById('form-payment-method').value : 'Cash';
+    const cashReceiver = (paymentMethod === 'Cash' && document.getElementById('form-cash-receiver')) ? document.getElementById('form-cash-receiver').value : '';
+    const upiQrType = (paymentMethod === 'GPay / UPI' && document.getElementById('form-upi-qr-type')) ? document.getElementById('form-upi-qr-type').value : '';
+
+    const sparePartsList = [];
+    const spareContainer = document.getElementById('dynamic-spare-parts-container');
+    if (spareContainer) {
+      spareContainer.querySelectorAll('.spare-part-row-item').forEach(row => {
+        const nameInput = row.querySelector('.spare-item-input');
+        const costInput = row.querySelector('.spare-item-cost');
+        if (nameInput && nameInput.value.trim()) {
+          sparePartsList.push(`${nameInput.value.trim()}${costInput && costInput.value ? ' (₹' + costInput.value + ')' : ''}`);
+        }
+      });
+    }
+
+    const accSerialList = [];
+    const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
+    if (accSerialContainer) {
+      accSerialContainer.querySelectorAll('.accessory-serial-row-item').forEach(row => {
+        const nameInput = row.querySelector('.acc-name-input');
+        const serialInput = row.querySelector('.acc-serial-input');
+        if (nameInput && nameInput.value.trim()) {
+          accSerialList.push(`${nameInput.value.trim()}: S/N ${serialInput ? serialInput.value.trim() : 'N/A'}`);
+        }
+      });
+    }
+
+    const accessories = [];
+    const accContainer = document.getElementById('accessory-checkbox-matrix-grid');
+    if (accContainer) {
+      accContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => accessories.push(cb.value));
+    }
+
+    const technicians = [];
+    const techContainer = document.getElementById('technician-checkbox-matrix-grid');
+    if (techContainer) {
+      techContainer.querySelectorAll('input[name="tech-nodes"]:checked').forEach(cb => technicians.push(cb.value));
+    }
+
+    const formattedIssues = operationalIssuesCollection.map(i => {
+      const prefix = i.isDone ? '[DONE] ' : '';
+      const costInfo = ` (${i.minCost || 0}-${i.maxCost || 0})`;
+      return `${prefix}${i.text}${costInfo}`;
+    }).join(', ');
+
+    let existingTimeline = [];
+    if (mode === "UPDATE" && ticketId) {
+      const existingTicket = (App.State.tickets || []).find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketId).trim().toLowerCase());
+      if (existingTicket && existingTicket.timeline) {
+        try {
+          existingTimeline = typeof existingTicket.timeline === 'string' ? JSON.parse(existingTicket.timeline) : existingTicket.timeline;
+        } catch (e) {
+          existingTimeline = [];
+        }
+      }
+    }
+
+    const newStatus = document.getElementById('form-status')?.value || "Pending";
+    const statusMemo = document.getElementById('form-status-notes')?.value.trim() || "Status or ticket updated.";
+    const currentUsername = (App.State.user && App.State.user.username) ? App.State.user.username : "System Operator";
+
+    let previousStatus = "Pending";
+    if (mode === "UPDATE" && ticketId) {
+      const existingTicket = (App.State.tickets || []).find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketId).trim().toLowerCase());
+      if (existingTicket) previousStatus = existingTicket.status || "Pending";
+    }
+
+    const nowObj = new Date();
+    const dateStr = nowObj.toLocaleDateString('en-IN');
+    const timeStr = nowObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    const auditEntry = {
+      username: currentUsername,
+      date: dateStr,
+      time: timeStr,
+      transition: mode === "UPDATE" ? `${previousStatus} → ${newStatus}` : `Created as ${newStatus}`,
+      notes: statusMemo
+    };
+    existingTimeline.unshift(auditEntry);
+
+    const payload = {
+      ticketNumber: ticketId,
+      customerType: document.getElementById('form-customer-type')?.value || "Customer",
+      customerName: document.getElementById('form-customer-name')?.value.trim() || "",
+      phoneNumber: document.getElementById('form-phone-number')?.value.trim() || "",
+      whatsAppNumber: document.getElementById('form-whatsapp-number')?.value.trim() || document.getElementById('form-phone-number')?.value.trim() || "",
+      referralPerson: document.getElementById('form-referral-person')?.value.trim() || "",
+      deviceType: document.getElementById('form-device-type')?.value || "Laptop",
+      brand: document.getElementBy              padding: '10px 14px',
               cursor: 'pointer',
               borderBottom: '1px solid rgba(255,255,255,0.08)',
               fontSize: '0.85rem'
