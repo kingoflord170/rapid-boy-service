@@ -1,7 +1,6 @@
 /**
- * Rapid Boy Service Manager Pro V4.5 - Form Engine & Issue Completion Tracker
- * Interactive Strikethrough Checklist with Min/Max Estimation, Accessories Serial S/N, & Dynamic Payment Logic
- * Fully Complete - Production Ready [2026]
+ * Rapid Boy Service Manager Pro V4.6 - Form Engine & Payment Ledger
+ * Supports Issue-wise Min/Max Estimation, Part Payments History, & Backward-Compatible Payload
  */
 
 window.RapidBoy = window.RapidBoy || {};
@@ -12,9 +11,10 @@ window.RapidBoy = window.RapidBoy || {};
   App.Form = App.Form || {};
 
   let operationalIssuesCollection = [];
+  let paymentHistoryCollection = [];
 
   App.Form.init = function () {
-    console.log("🚀 Rapid Boy Form Engine V4.5 Active...");
+    console.log("🚀 Rapid Boy Form Engine V4.6 Active...");
 
     const form = document.getElementById('master-ticket-operational-form');
     if (form) {
@@ -29,8 +29,9 @@ window.RapidBoy = window.RapidBoy || {};
 
       activeForm.addEventListener('reset', () => {
         operationalIssuesCollection = [];
+        paymentHistoryCollection = [];
         App.Form.renderDynamicIssuesChecklist();
-        App.Form.togglePaymentDynamicFields();
+        App.Form.renderPaymentHistoryTable();
         const spareContainer = document.getElementById('dynamic-spare-parts-container');
         if (spareContainer) spareContainer.innerHTML = '';
         const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
@@ -38,12 +39,7 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
-    const paymentSelect = document.getElementById('form-payment-method');
-    if (paymentSelect) {
-      paymentSelect.addEventListener('change', App.Form.togglePaymentDynamicFields);
-      App.Form.togglePaymentDynamicFields();
-    }
-
+    // Issue Adder Handler
     const addIssueBtn = document.getElementById('add-issue-node-trigger');
     const issueInput = document.getElementById('custom-issue-input-field');
     const minCostInput = document.getElementById('custom-issue-min-cost-field');
@@ -66,6 +62,15 @@ window.RapidBoy = window.RapidBoy || {};
       });
     }
 
+    // Receive Payment Trigger Button Handler
+    const receivePaymentBtn = document.getElementById('trigger-receive-payment-modal');
+    if (receivePaymentBtn) {
+      receivePaymentBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        App.Form.openReceivePaymentModal();
+      });
+    }
+
     const addSpareBtn = document.getElementById('add-spare-row-btn');
     if (addSpareBtn) {
       addSpareBtn.addEventListener('click', (e) => {
@@ -85,24 +90,156 @@ window.RapidBoy = window.RapidBoy || {};
     App.Form.setupCustomerAutoSuggest();
   };
 
-  App.Form.togglePaymentDynamicFields = function () {
-    const paymentSelect = document.getElementById('form-payment-method');
-    const cashWrapper = document.getElementById('wrapper-cash-receiver');
-    const upiWrapper = document.getElementById('wrapper-upi-qr-type');
+  /**
+   * 💰 Receive Payment Modal Trigger System
+   */
+  App.Form.openReceivePaymentModal = function () {
+    const modalBody = document.getElementById('modal-core-render-body-scroll');
+    const modalTitle = document.getElementById('modal-card-title-string');
+    const modalFooter = document.getElementById('modal-layout-footer-actions');
 
-    if (!paymentSelect) return;
-    const mode = paymentSelect.value;
+    if (!modalBody || !modalTitle || !modalFooter) return;
 
-    if (mode === 'Cash') {
-      if (cashWrapper) cashWrapper.style.display = 'block';
-      if (upiWrapper) upiWrapper.style.display = 'none';
-    } else if (mode === 'GPay / UPI') {
-      if (cashWrapper) cashWrapper.style.display = 'none';
-      if (upiWrapper) upiWrapper.style.display = 'block';
-    } else {
-      if (cashWrapper) cashWrapper.style.display = 'none';
-      if (upiWrapper) upiWrapper.style.display = 'none';
+    modalTitle.innerText = "Record Received Payment / Part-Payment";
+
+    modalBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="input-group">
+          <input type="number" id="popup-payment-amount" placeholder=" " min="1" required style="background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1;">
+          <label for="popup-payment-amount" style="background: #f8fafc; color: #475569;">Payment Amount (₹)</label>
+          <span class="material-icons-round input-icon">currency_rupee</span>
+        </div>
+
+        <div class="input-group">
+          <select id="popup-payment-mode" required style="background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1;">
+            <option value="Cash">Cash</option>
+            <option value="RapidBoy QR">RapidBoy QR</option>
+            <option value="Carbon QR">Carbon QR</option>
+            <option value="Rapid GPay">Rapid GPay</option>
+            <option value="Carbon GPay">Carbon GPay</option>
+            <option value="Account Transfer">Account Transfer</option>
+          </select>
+          <label class="select-label-fix" style="background: #f8fafc; color: #475569;">Payment Mode</label>
+          <span class="material-icons-round input-icon">account_balance_wallet</span>
+        </div>
+
+        <div class="input-group">
+          <select id="popup-cash-receiver" style="background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1;">
+            <option value="Anand">Anand</option>
+            <option value="Selva">Selva</option>
+            <option value="Zaffar">Zaffar</option>
+            <option value="Kathir">Kathir</option>
+            <option value="Mani">Mani</option>
+            <option value="Munesh">Munesh</option>
+            <option value="Murugan">Murugan</option>
+          </select>
+          <label class="select-label-fix" style="background: #f8fafc; color: #475569;">Received By</label>
+          <span class="material-icons-round input-icon">person</span>
+        </div>
+      </div>
+    `;
+
+    modalFooter.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-small" onclick="window.RapidBoy.UI.closeSystemModal()">Cancel</button>
+      <button type="button" class="btn btn-primary btn-small" onclick="window.RapidBoy.Form.confirmReceivePayment()">Save Payment</button>
+    `;
+
+    if (App.UI && typeof App.UI.openSystemModal === 'function') {
+      App.UI.openSystemModal();
     }
+  };
+
+  App.Form.confirmReceivePayment = function () {
+    const amtInput = document.getElementById('popup-payment-amount');
+    const modeInput = document.getElementById('popup-payment-mode');
+    const receiverInput = document.getElementById('popup-cash-receiver');
+
+    const amount = parseFloat(amtInput?.value) || 0;
+    if (amount <= 0) {
+      if (App.UI && typeof App.UI.showToast === 'function') {
+        App.UI.showToast("Invalid Amount", "Please enter a valid payment amount.", "error");
+      }
+      return;
+    }
+
+    const nowObj = new Date();
+    const entry = {
+      amount: amount,
+      mode: modeInput?.value || "Cash",
+      receiver: receiverInput?.value || "Anand",
+      dateTime: nowObj.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+
+    paymentHistoryCollection.push(entry);
+    App.Form.renderPaymentHistoryTable();
+    App.Form.recalculateLedgerTotals();
+
+    if (App.UI && typeof App.UI.closeSystemModal === 'function') {
+      App.UI.closeSystemModal();
+    }
+    if (App.UI && typeof App.UI.showToast === 'function') {
+      App.UI.showToast("Payment Recorded", `Successfully added ₹${amount} via ${entry.mode}`, "success");
+    }
+  };
+
+  App.Form.renderPaymentHistoryTable = function () {
+    const mount = document.getElementById('payment-history-table-mount');
+    if (!mount) return;
+
+    if (paymentHistoryCollection.length === 0) {
+      mount.innerHTML = `<div style="font-size:0.8rem; color:#64748b; font-style:italic;">No payments recorded yet. Click 'Received Payment' to add.</div>`;
+      return;
+    }
+
+    let html = `
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px;">
+        <thead>
+          <tr style="background: #e2e8f0; color: #0f172a;">
+            <th style="padding: 6px 8px; border: 1px solid #cbd5e1;">Date/Time</th>
+            <th style="padding: 6px 8px; border: 1px solid #cbd5e1;">Mode</th>
+            <th style="padding: 6px 8px; border: 1px solid #cbd5e1;">Receiver</th>
+            <th style="padding: 6px 8px; border: 1px solid #cbd5e1;">Amount</th>
+            <th style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    paymentHistoryCollection.forEach((p, idx) => {
+      html += `
+        <tr>
+          <td style="padding: 6px 8px; border: 1px solid #cbd5e1; color: #334155;">${p.dateTime}</td>
+          <td style="padding: 6px 8px; border: 1px solid #cbd5e1; color: #2563eb; font-weight: 600;">${p.mode}</td>
+          <td style="padding: 6px 8px; border: 1px solid #cbd5e1; color: #334155;">${p.receiver}</td>
+          <td style="padding: 6px 8px; border: 1px solid #cbd5e1; color: #10b981; font-weight: 700;">₹${p.amount}</td>
+          <td style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center;">
+            <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer;" onclick="window.RapidBoy.Form.removePaymentEntry(${idx})">
+              <span class="material-icons-round" style="font-size: 1rem;">delete</span>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    mount.innerHTML = html;
+  };
+
+  App.Form.removePaymentEntry = function (idx) {
+    paymentHistoryCollection.splice(idx, 1);
+    App.Form.renderPaymentHistoryTable();
+    App.Form.recalculateLedgerTotals();
+  };
+
+  App.Form.recalculateLedgerTotals = function () {
+    let totalPaid = 0;
+    paymentHistoryCollection.forEach(p => totalPaid += Number(p.amount || 0));
+
+    const advanceField = document.getElementById('form-advance');
+    if (advanceField) advanceField.value = totalPaid;
+
+    const finalCost = parseFloat(document.getElementById('form-final-cost')?.value) || 0;
+    const balanceField = document.getElementById('form-balance-due'); // if present
   };
 
   App.Form.addSparePartRow = function (nameVal = "", costVal = "") {
@@ -113,8 +250,8 @@ window.RapidBoy = window.RapidBoy || {};
     row.className = 'spare-part-row-item';
     row.style.cssText = "display: flex; gap: 10px; align-items: center;";
     row.innerHTML = `
-      <input type="text" placeholder="Spare Part Name / Number" value="${App.Utils.sanitizeHTML(nameVal)}" class="spare-item-input" style="flex: 2; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none;">
-      <input type="number" placeholder="Cost (₹)" value="${costVal || ''}" class="spare-item-cost" min="0" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none;">
+      <input type="text" placeholder="Spare Part Name / Number" value="${App.Utils.sanitizeHTML(nameVal)}" class="spare-item-input" style="flex: 2; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; color: #0f172a; font-size: 0.85rem; outline: none;">
+      <input type="number" placeholder="Cost (₹)" value="${costVal || ''}" class="spare-item-cost" min="0" style="flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; color: #0f172a; font-size: 0.85rem; outline: none;">
       <button type="button" class="btn-icon-round" style="color: #ef4444;" onclick="this.parentElement.remove()" title="Remove Spare">
         <span class="material-icons-round" style="font-size: 1rem;">delete</span>
       </button>
@@ -130,8 +267,8 @@ window.RapidBoy = window.RapidBoy || {};
     row.className = 'accessory-serial-row-item';
     row.style.cssText = "display: flex; gap: 10px; align-items: center;";
     row.innerHTML = `
-      <input type="text" placeholder="Accessory Name (e.g. Charger)" value="${App.Utils.sanitizeHTML(nameVal)}" class="acc-name-input" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none;">
-      <input type="text" placeholder="Serial Number (S/N)" value="${App.Utils.sanitizeHTML(serialVal)}" class="acc-serial-input" style="flex: 1; background: rgba(5,7,12,0.5); border: 1px solid var(--border-glass); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none;">
+      <input type="text" placeholder="Accessory Name" value="${App.Utils.sanitizeHTML(nameVal)}" class="acc-name-input" style="flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; color: #0f172a; font-size: 0.85rem; outline: none;">
+      <input type="text" placeholder="Serial Number (S/N)" value="${App.Utils.sanitizeHTML(serialVal)}" class="acc-serial-input" style="flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; color: #0f172a; font-size: 0.85rem; outline: none;">
       <button type="button" class="btn-icon-round" style="color: #ef4444;" onclick="this.parentElement.remove()" title="Remove">
         <span class="material-icons-round" style="font-size: 1rem;">delete</span>
       </button>
@@ -153,20 +290,10 @@ window.RapidBoy = window.RapidBoy || {};
         suggestBox = document.createElement('div');
         suggestBox.className = 'rapidboy-auto-suggest-dropdown';
         Object.assign(suggestBox.style, {
-          position: 'absolute',
-          top: '100%',
-          left: '0',
-          right: '0',
-          zIndex: '99999',
-          background: '#0f172a',
-          color: '#f8fafc',
-          border: '1px solid #06b6d4',
-          borderRadius: '8px',
-          boxShadow: '0 12px 30px rgba(0,0,0,0.85)',
-          maxHeight: '220px',
-          overflowY: 'auto',
-          marginTop: '4px',
-          display: 'none'
+          position: 'absolute', top: '100%', left: '0', right: '0', zIndex: '99999',
+          background: '#ffffff', color: '#0f172a', border: '1px solid #2563eb',
+          borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+          maxHeight: '220px', overflowY: 'auto', marginTop: '4px', display: 'none'
         });
         parentGroup.style.position = 'relative';
         parentGroup.appendChild(suggestBox);
@@ -202,9 +329,7 @@ window.RapidBoy = window.RapidBoy || {};
         }
 
         const uniqueMap = new Map();
-        customerPool.forEach(c => {
-          if (c.phoneNumber) uniqueMap.set(c.phoneNumber, c);
-        });
+        customerPool.forEach(c => { if (c.phoneNumber) uniqueMap.set(c.phoneNumber, c); });
 
         const matches = [];
         uniqueMap.forEach(c => {
@@ -217,66 +342,44 @@ window.RapidBoy = window.RapidBoy || {};
           suggestBox.innerHTML = '';
           matches.slice(0, 6).forEach(c => {
             const item = document.createElement('div');
-            Object.assign(item.style, {
-              padding: '10px 14px',
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              fontSize: '0.85rem'
-            });
+            Object.assign(item.style, { padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #e2e8f0', fontSize: '0.85rem' });
 
             item.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="color:#06b6d4;">${App.Utils.sanitizeHTML(c.customerName)}</strong>
-                <span style="font-size:0.75rem; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; color:#cbd5e1;">${App.Utils.sanitizeHTML(c.customerType)}</span>
+                <strong style="color:#2563eb;">${App.Utils.sanitizeHTML(c.customerName)}</strong>
+                <span style="font-size:0.75rem; background:#e2e8f0; padding:2px 6px; border-radius:4px; color:#334155;">${App.Utils.sanitizeHTML(c.customerType)}</span>
               </div>
-              <div style="color:#94a3b8; font-size:0.78rem; margin-top:2px;">📞 ${App.Utils.sanitizeHTML(c.phoneNumber)}</div>
+              <div style="color:#64748b; font-size:0.78rem; margin-top:2px;">📞 ${App.Utils.sanitizeHTML(c.phoneNumber)}</div>
             `;
 
             item.addEventListener('mousedown', (e) => {
               e.preventDefault();
-              const nameF = document.getElementById('form-customer-name');
-              const phoneF = document.getElementById('form-phone-number');
+              document.getElementById('form-customer-name').value = c.customerName;
+              document.getElementById('form-phone-number').value = c.phoneNumber;
               const waF = document.getElementById('form-whatsapp-number');
-              const typeF = document.getElementById('form-customer-type');
-              const refF = document.getElementById('form-referral-person');
-
-              if (nameF) nameF.value = c.customerName;
-              if (phoneF) phoneF.value = c.phoneNumber;
               if (waF) waF.value = c.whatsAppNumber || c.phoneNumber;
-              if (typeF) typeF.value = c.customerType || 'Customer';
-              if (refF) refF.value = c.referralPerson || '';
-
+              document.getElementById('form-customer-type').value = c.customerType || 'Customer';
+              document.getElementById('form-referral-person').value = c.referralPerson || '';
               suggestBox.style.display = 'none';
-
-              if (App.UI && typeof App.UI.showToast === 'function') {
-                App.UI.showToast("Customer Selected", `Loaded profile for ${c.customerName}`, "info");
-              }
             });
-
             suggestBox.appendChild(item);
           });
-
           suggestBox.style.display = 'block';
         } else {
           suggestBox.style.display = 'none';
         }
       });
 
-      inputEl.addEventListener('blur', () => {
-        setTimeout(() => { suggestBox.style.display = 'none'; }, 200);
-      });
-
-      inputEl.addEventListener('focus', function () {
-        if (this.value.trim().length >= 2) {
-          this.dispatchEvent(new Event('input'));
-        }
-      });
+      inputEl.addEventListener('blur', () => { setTimeout(() => { suggestBox.style.display = 'none'; }, 200); });
     };
 
     attachSuggestListener(nameInput);
     attachSuggestListener(phoneInput);
   };
 
+  /**
+   * ⚡ Issue Checklist Render & Auto-Estimation Recalculation
+   */
   App.Form.renderDynamicIssuesChecklist = function () {
     const mount = document.getElementById('dynamic-issues-checklist-mount-point');
     if (!mount) return;
@@ -285,20 +388,20 @@ window.RapidBoy = window.RapidBoy || {};
     let totalMaxEst = 0;
 
     if (operationalIssuesCollection.length === 0) {
-      mount.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">No active issue profiles attached yet.</div>`;
+      mount.innerHTML = `<div style="color:#64748b; font-size:0.85rem; font-style:italic;">No active issue profiles attached yet.</div>`;
     } else {
       let html = "";
       operationalIssuesCollection.forEach((issObj, index) => {
         totalMinEst += Number(issObj.minCost || 0);
         totalMaxEst += Number(issObj.maxCost || 0);
 
-        const textStyle = issObj.isDone ? "text-decoration: line-through; color: #64748b; font-style: italic;" : "color: #cbd5e1;";
+        const textStyle = issObj.isDone ? "text-decoration: line-through; color: #64748b; font-style: italic;" : "color: #0f172a;";
         const statusBadge = issObj.isDone
           ? `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; margin-left: 8px;">✓ COMPLETED</span>`
-          : `<span style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: 8px;">PENDING</span>`;
+          : `<span style="background: rgba(245, 158, 11, 0.15); color: #d97706; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: 8px;">PENDING</span>`;
 
         html += `
-          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:6px; margin-bottom:6px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:10px 14px; border-radius:8px; margin-bottom:8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
             <div style="cursor: pointer; flex: 1; display: flex; align-items: center; justify-content: space-between;" onclick="window.RapidBoy.Form.toggleIssueCompletion(${index})">
               <div style="display: flex; align-items: center;">
                 <span class="material-icons-round" style="font-size: 1.1rem; margin-right: 8px; color: ${issObj.isDone ? '#10b981' : '#64748b'};">
@@ -306,7 +409,7 @@ window.RapidBoy = window.RapidBoy || {};
                 </span>
                 <span style="font-size:0.88rem; ${textStyle}">${App.Utils.sanitizeHTML(issObj.text)}</span>${statusBadge}
               </div>
-              <span style="font-size:0.8rem; color: var(--accent-cyan); font-family: monospace; margin-right: 12px;">₹${issObj.minCost || 0} - ₹${issObj.maxCost || 0}</span>
+              <span style="font-size:0.85rem; color: #2563eb; font-family: monospace; font-weight: 700; margin-right: 12px;">₹${issObj.minCost || 0} – ₹${issObj.maxCost || 0}</span>
             </div>
             <button type="button" style="background:none; border:none; color:#ef4444; cursor:pointer; margin-left: 10px;" onclick="window.RapidBoy.Form.removeIssue(${index})">
               <span class="material-icons-round" style="font-size:1.1rem;">delete</span>
@@ -343,9 +446,6 @@ window.RapidBoy = window.RapidBoy || {};
 
     const finalCost = parseFloat(document.getElementById('form-final-cost')?.value) || 0;
     const advance = parseFloat(document.getElementById('form-advance')?.value) || 0;
-    const paymentMethod = document.getElementById('form-payment-method') ? document.getElementById('form-payment-method').value : 'Cash';
-    const cashReceiver = (paymentMethod === 'Cash' && document.getElementById('form-cash-receiver')) ? document.getElementById('form-cash-receiver').value : '';
-    const upiQrType = (paymentMethod === 'GPay / UPI' && document.getElementById('form-upi-qr-type')) ? document.getElementById('form-upi-qr-type').value : '';
 
     const sparePartsList = [];
     const spareContainer = document.getElementById('dynamic-spare-parts-container');
@@ -412,13 +512,10 @@ window.RapidBoy = window.RapidBoy || {};
     }
 
     const nowObj = new Date();
-    const dateStr = nowObj.toLocaleDateString('en-IN');
-    const timeStr = nowObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
     const auditEntry = {
       username: currentUsername,
-      date: dateStr,
-      time: timeStr,
+      date: nowObj.toLocaleDateString('en-IN'),
+      time: nowObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
       transition: mode === "UPDATE" ? `${previousStatus} → ${newStatus}` : `Created as ${newStatus}`,
       notes: statusMemo
     };
@@ -443,9 +540,8 @@ window.RapidBoy = window.RapidBoy || {};
       estimationTo: parseFloat(document.getElementById('form-estimation-to')?.value) || 0,
       finalCost: finalCost,
       advance: advance,
-      paymentMethod: paymentMethod,
-      cashReceiver: cashReceiver,
-      upiQrType: upiQrType,
+      paymentMethod: paymentHistoryCollection.length > 0 ? paymentHistoryCollection[paymentHistoryCollection.length - 1].mode : "Cash",
+      paymentHistory: JSON.stringify(paymentHistoryCollection),
       issue: formattedIssues,
       remarks: document.getElementById('form-remarks')?.value.trim() || "",
       privateTechNotes: document.getElementById('form-private-tech-notes')?.value.trim() || "",
@@ -465,12 +561,9 @@ window.RapidBoy = window.RapidBoy || {};
           App.UI.showToast("Success", "Work order saved successfully.", "success");
           document.getElementById('master-ticket-operational-form')?.reset();
           operationalIssuesCollection = [];
+          paymentHistoryCollection = [];
           App.Form.renderDynamicIssuesChecklist();
-          App.Form.togglePaymentDynamicFields();
-          const spareContainerReset = document.getElementById('dynamic-spare-parts-container');
-          if (spareContainerReset) spareContainerReset.innerHTML = '';
-          const accSerialContainerReset = document.getElementById('dynamic-accessory-serial-container');
-          if (accSerialContainerReset) accSerialContainerReset.innerHTML = '';
+          App.Form.renderPaymentHistoryTable();
 
           await App.UI.refreshGlobalDataStream(true);
 
@@ -523,6 +616,24 @@ window.RapidBoy = window.RapidBoy || {};
       setVal('form-serial-number', ticket.serialNumber || "");
       setVal('form-accessory-serial', ticket.accessorySerial || "");
 
+      // Load Payment History JSON if present
+      paymentHistoryCollection = [];
+      if (ticket.paymentHistory) {
+        try {
+          paymentHistoryCollection = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
+        } catch (e) {
+          paymentHistoryCollection = [];
+        }
+      } else if (ticket.advance && ticket.advance > 0) {
+        paymentHistoryCollection.push({
+          amount: ticket.advance,
+          mode: ticket.paymentMethod || 'Cash',
+          receiver: ticket.cashReceiver || 'Anand',
+          dateTime: 'Legacy Record'
+        });
+      }
+      App.Form.renderPaymentHistoryTable();
+
       const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
       if (accSerialContainer) {
         accSerialContainer.innerHTML = "";
@@ -557,12 +668,6 @@ window.RapidBoy = window.RapidBoy || {};
       setVal('form-estimation-to', ticket.estimationTo || 0);
       setVal('form-final-cost', ticket.finalCost || 0);
       setVal('form-advance', ticket.advance || 0);
-
-      setVal('form-payment-method', ticket.paymentMethod || "Cash");
-      App.Form.togglePaymentDynamicFields();
-
-      setVal('form-cash-receiver', ticket.cashReceiver || "Anand");
-      setVal('form-upi-qr-type', ticket.upiQrType || "Rapidboy QR");
 
       setVal('form-remarks', ticket.remarks || "");
       setVal('form-private-tech-notes', ticket.privateTechNotes || "");
