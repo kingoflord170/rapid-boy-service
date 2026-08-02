@@ -28,7 +28,8 @@ window.RapidBoy = window.RapidBoy || {};
     let pendingCollection = 0;
     let todayCollection = 0;
 
-    const todayStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    // Robust ISO Date comparison string (YYYY-MM-DD)
+    const todayISOStr = new Date().toISOString().split('T')[0];
 
     // Status Counter Store matching V4.6 semantics
     const statusCounts = {
@@ -68,9 +69,15 @@ window.RapidBoy = window.RapidBoy || {};
         const pAmt = parseFloat(p.amount) || 0;
         totalPaid += pAmt;
 
-        // Check if payment was made today
-        if (p.dateTime && p.dateTime.toLowerCase().includes(todayStr.toLowerCase())) {
+        // Check if payment date matches today (using ISO raw data or fallback text matching)
+        if (p.dateISO === todayISOStr || (p.dateTime && p.dateTime.includes(todayISOStr))) {
           todayCollection += pAmt;
+        } else if (p.dateTime) {
+          // Fallback check if stored string contains today's readable date format
+          const readableToday = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          if (p.dateTime.toLowerCase().includes(readableToday.toLowerCase())) {
+            todayCollection += pAmt;
+          }
         }
       });
 
