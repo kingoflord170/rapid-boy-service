@@ -361,7 +361,7 @@
             </div>
           </div>
 
-          <!-- Financial Estimate & Received Payment System -->
+          <!-- Financial Estimate & Received Payment System with Balance Due -->
           <div class="form-section-card">
             <div class="section-card-header">
               <span class="material-icons-round">payments</span>
@@ -393,6 +393,15 @@
                 <input type="number" id="form-advance" placeholder=" " min="0" value="0" readonly style="background: #F1F5F9;">
                 <label for="form-advance">Total Received Paid (₹)</label>
                 <span class="material-icons-round input-icon">savings</span>
+              </div>
+            </div>
+
+            <!-- Balance Due Auto-Calculated Field -->
+            <div class="form-fields-row-double" style="margin-top: 20px;">
+              <div class="input-group">
+                <input type="number" id="form-balance-due" placeholder=" " min="0" value="0" readonly style="background: #F1F5F9; color: #EF4444; font-weight: 700;">
+                <label for="form-balance-due">Balance Due (₹) [Auto-Calculated]</label>
+                <span class="material-icons-round input-icon" style="color: #EF4444;">account_balance_wallet</span>
               </div>
             </div>
 
