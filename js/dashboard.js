@@ -11,6 +11,16 @@ window.RapidBoy = window.RapidBoy || {};
   App.Dashboard = App.Dashboard || {};
 
   /**
+   * Helper: Get local ISO date string (YYYY-MM-DD) without UTC shift for India (IST)
+   */
+  const getLocalISODate = () => {
+    const d = new Date();
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().split('T')[0];
+  };
+
+  /**
    * Initialize Dashboard Events & Telemetry Handlers
    */
   App.Dashboard.init = function () {
@@ -24,12 +34,12 @@ window.RapidBoy = window.RapidBoy || {};
   App.Dashboard.refreshStats = function () {
     const tickets = App.State.tickets || [];
 
-    let totalRevenue = 0;
-    let pendingCollection = 0;
-    let todayCollection = 0;
+    let totalCollectedRevenue = 0; // Total actual cash/digital money collected across all tickets
+    let pendingCollection = 0;     // Total balance due remaining across all tickets
+    let todayCollection = 0;       // Today's actual collections via paymentHistory
 
-    // Robust ISO Date comparison string (YYYY-MM-DD)
-    const todayISOStr = new Date().toISOString().split('T')[0];
+    const todayISOStr = getLocalISODate();
+    const readableToday = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
     // Status Counter Store matching V4.6 semantics
     const statusCounts = {
@@ -48,7 +58,6 @@ window.RapidBoy = window.RapidBoy || {};
 
     tickets.forEach(ticket => {
       const finalCost = parseFloat(ticket.finalCost) || 0;
-      totalRevenue += finalCost;
 
       // Calculate total paid and balance accurately from paymentHistory array
       let totalPaid = 0;
@@ -69,17 +78,16 @@ window.RapidBoy = window.RapidBoy || {};
         const pAmt = parseFloat(p.amount) || 0;
         totalPaid += pAmt;
 
-        // Check if payment date matches today (using ISO raw data or fallback text matching)
+        // Check if payment date matches today robustly using local dateISO or readable string
         if (p.dateISO === todayISOStr || (p.dateTime && p.dateTime.includes(todayISOStr))) {
           todayCollection += pAmt;
-        } else if (p.dateTime) {
-          // Fallback check if stored string contains today's readable date format
-          const readableToday = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-          if (p.dateTime.toLowerCase().includes(readableToday.toLowerCase())) {
-            todayCollection += pAmt;
-          }
+        } else if (p.dateTime && p.dateTime.toLowerCase().includes(readableToday.toLowerCase())) {
+          todayCollection += pAmt;
         }
       });
+
+      // Accumulate actual collected revenue from total paid amounts
+      totalCollectedRevenue += totalPaid;
 
       const balanceDue = Math.max(0, finalCost - totalPaid);
       pendingCollection += balanceDue;
@@ -98,7 +106,7 @@ window.RapidBoy = window.RapidBoy || {};
     const pendNode = document.getElementById('stat-pending-collection');
     const todayNode = document.getElementById('stat-today-collection');
 
-    if (revNode) revNode.innerText = App.Utils.formatCurrency(totalRevenue);
+    if (revNode) revNode.innerText = App.Utils.formatCurrency(totalCollectedRevenue);
     if (pendNode) pendNode.innerText = App.Utils.formatCurrency(pendingCollection);
     if (todayNode) todayNode.innerText = App.Utils.formatCurrency(todayCollection);
 
