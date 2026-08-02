@@ -1,4 +1,3 @@
-
 /**
  * Rapid Boy Service Manager Pro V4.6 - Form Engine & Payment Ledger
  * Fully Integrated with Balance Due Calculation, Part Payments, and Issue Min/Max Estimation
@@ -13,6 +12,16 @@ window.RapidBoy = window.RapidBoy || {};
 
   let operationalIssuesCollection = [];
   let paymentHistoryCollection = [];
+
+  /**
+   * Helper: Get local ISO date string (YYYY-MM-DD) without UTC shift
+   */
+  const getLocalISODate = () => {
+    const d = new Date();
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+    return localDate.toISOString().split('T')[0];
+  };
 
   App.Form.init = function () {
     console.log("🚀 Rapid Boy Form Engine V4.6 Active...");
@@ -101,7 +110,7 @@ window.RapidBoy = window.RapidBoy || {};
   };
 
   /**
-   * 💰 Receive Payment Modal Trigger System
+   * 💰 Receive Payment Modal Trigger System with Overpayment Check (Bypassed if Final Cost is 0)
    */
   App.Form.openReceivePaymentModal = function () {
     const modalBody = document.getElementById('modal-core-render-body-scroll');
@@ -172,11 +181,27 @@ window.RapidBoy = window.RapidBoy || {};
       return;
     }
 
+    let totalPaidSoFar = 0;
+    paymentHistoryCollection.forEach(p => totalPaidSoFar += Number(p.amount || 0));
+    const finalCostVal = parseFloat(document.getElementById('form-final-cost')?.value) || 0;
+
+    // Overpayment prevention: Only enforce if Final Cost has been fixed (> 0)
+    if (finalCostVal > 0) {
+      const currentBalanceDue = Math.max(0, finalCostVal - totalPaidSoFar);
+      if (amount > currentBalanceDue) {
+        if (App.UI && typeof App.UI.showToast === 'function') {
+          App.UI.showToast("Overpayment Prevented", `Amount (₹${amount}) exceeds remaining balance due (₹${currentBalanceDue}).`, "error");
+        }
+        return;
+      }
+    }
+
     const nowObj = new Date();
     const entry = {
       amount: amount,
       mode: modeInput?.value || "Cash",
       receiver: receiverInput?.value || "Anand",
+      dateISO: getLocalISODate(),
       dateTime: nowObj.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
@@ -647,19 +672,21 @@ window.RapidBoy = window.RapidBoy || {};
           amount: ticket.advance,
           mode: ticket.paymentMethod || 'Cash',
           receiver: ticket.cashReceiver || 'Anand',
+          dateISO: getLocalISODate(),
           dateTime: 'Legacy Record'
         });
       }
       App.Form.renderPaymentHistoryTable();
 
+      // Load Accessory Serials (Robust single & multi entry support)
       const accSerialContainer = document.getElementById('dynamic-accessory-serial-container');
       if (accSerialContainer) {
         accSerialContainer.innerHTML = "";
-        if (ticket.accessorySerial && ticket.accessorySerial.includes('|')) {
+        if (ticket.accessorySerial) {
           const accSerials = String(ticket.accessorySerial).split('|').map(s => s.trim());
           accSerials.forEach(acc => {
-            const parts = acc.split(': S/N');
-            if (parts.length === 2) {
+            if (acc.includes(': S/N')) {
+              const parts = acc.split(': S/N');
               App.Form.addAccessorySerialRow(parts[0].trim(), parts[1].trim());
             } else if (acc) {
               App.Form.addAccessorySerialRow(acc, "");
@@ -668,13 +695,23 @@ window.RapidBoy = window.RapidBoy || {};
         }
       }
 
+      // Load Spare Parts with correct name and cost parsing (e.g. "SSD (₹2500)")
       const spareContainer = document.getElementById('dynamic-spare-parts-container');
       if (spareContainer) {
         spareContainer.innerHTML = "";
         if (ticket.spareSerial) {
           const parts = String(ticket.spareSerial).split(',').map(s => s.trim());
           parts.forEach(p => {
-            if (p) App.Form.addSparePartRow(p, "");
+            if (p) {
+              let spareName = p;
+              let spareCost = "";
+              const match = p.match(/(.*?)\s*\(₹([\d.]+)\)/);
+              if (match) {
+                spareName = match[1].trim();
+                spareCost = match[2].trim();
+              }
+              App.Form.addSparePartRow(spareName, spareCost);
+            }
           });
         }
       }
