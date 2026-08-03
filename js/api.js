@@ -14,7 +14,7 @@ window.RapidBoy = window.RapidBoy || {};
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8waBGIp4Y4x4CALAnKdcaIOzTxacHjOUQRocL9KtdgK76aMQInWD1hNPUMHsiaZztKA/exec";
 
     // Request Timeout configuration (15 seconds)
-    const API_TIMEOUT_MS = 15000;
+    const API_TIMEOUT_MS = 60000;
 
     /**
      * Generic secure POST payload transmission wrapper with safety cloning, timeout, and robust parsing
