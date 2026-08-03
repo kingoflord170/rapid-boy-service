@@ -446,7 +446,7 @@ window.RapidBoy = window.RapidBoy || {};
             <td>
               <h1 class="company-title" style="font-size: ${18 * scaleFactor}pt;">RAPID BOY SERVICE CENTER</h1>
               <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">Advanced Chip-Level Laptop, PC & Mobile Service Hub | Thanjavur</p>
-              <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">📞 Helpline: +91 96776 00190 / 95008 30615</p>
+              <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">📞 Helpline: +91 96776 00190</p>
             </td>
             <td class="doc-badge">
               <h3 style="font-size: ${13 * scaleFactor}pt;">JOB SHEET / INVOICE</h3>
