@@ -1,7 +1,7 @@
 /**
  * Rapid Boy Service Manager Pro V4.6 - Audit Timeline & Interactive Modal Engine
  * Handles Ticket Lifecycle History, Financial Breakdown, and Tracking Actions
- * Fixed: Light-theme readable text contrast colors
+ * Clean Vertical History Layout (No Left Markers) with 100% Readable Dark Text Colors
  */
 
 window.RapidBoy = window.RapidBoy || {};
@@ -74,19 +74,19 @@ window.RapidBoy = window.RapidBoy || {};
 
     let timelineHtml = "";
     if (timelineEvents.length === 0) {
-      timelineHtml = `<div style="font-size: 0.85rem; color: #64748B; font-style: italic; padding: 10px 0;">No audit transition logs recorded yet.</div>`;
+      timelineHtml = `<div style="font-size: 0.85rem; color: #64748B; font-style: italic; padding: 10px 0; text-align: center;">No audit transition logs recorded yet.</div>`;
     } else {
       timelineEvents.forEach(ev => {
         timelineHtml += `
-          <div style="position: relative; padding-left: 14px; margin-bottom: 14px; border-left: 2px solid #2563EB;">
-            <div style="font-size: 0.75rem; color: #475569; margin-bottom: 2px; font-weight: 600;">
-              ${App.Utils.sanitizeHTML(ev.date || '')} – ${App.Utils.sanitizeHTML(ev.time || '')} 
-              <span style="font-weight: 700; color: #2563EB; margin-left: 6px;">[${App.Utils.sanitizeHTML(ev.username || 'System Operator')}]</span>
+          <div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: #2563EB;">[${App.Utils.sanitizeHTML(ev.username || 'System Operator')}]</span>
+              <span style="font-size: 0.75rem; color: #64748B; font-weight: 600;">${App.Utils.sanitizeHTML(ev.date || '')} – ${App.Utils.sanitizeHTML(ev.time || '')}</span>
             </div>
-            <div style="font-size: 0.88rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">
+            <div style="font-size: 0.9rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">
               ${App.Utils.sanitizeHTML(ev.transition || 'Status Update')}
             </div>
-            <div style="font-size: 0.82rem; color: #334155; background: #F8FAFC; padding: 8px 12px; border-radius: 6px; border: 1px solid #CBD5E1;">
+            <div style="font-size: 0.83rem; color: #334155; background: #F8FAFC; padding: 6px 10px; border-radius: 6px; border: 1px solid #E2E8F0;">
               ${App.Utils.sanitizeHTML(ev.notes || 'No notes provided.')}
             </div>
           </div>
@@ -140,7 +140,7 @@ window.RapidBoy = window.RapidBoy || {};
         <!-- Audit Timeline History -->
         <div>
           <h4 style="font-size: 0.9rem; color: #0F172A; margin-bottom: 12px; border-bottom: 1px solid #CBD5E1; padding-bottom: 6px;">Audit Trail & Status History</h4>
-          <div style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
             ${timelineHtml}
           </div>
         </div>
@@ -160,4 +160,4 @@ window.RapidBoy = window.RapidBoy || {};
     }
   };
 
-})(window.RapidBoy);s
+})(window.RapidBoy);
