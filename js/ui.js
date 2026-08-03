@@ -277,7 +277,27 @@ window.RapidBoy = window.RapidBoy || {};
       const matchPayment = (filters.paymentMethod === "ALL") ||
         (t.paymentMethod && String(t.paymentMethod).toLowerCase() === filters.paymentMethod.toLowerCase());
 
-      return matchSearch && matchStatus && matchTech && matchPayment;
+      // 📅 Date Filtering Logic Applied to Export
+      let matchDate = true;
+      if (filters.fromDate || filters.toDate) {
+        const rawDateStr = t.createdDate || t.inwardDate || "";
+        if (rawDateStr) {
+          try {
+            const ticketDate = new Date(rawDateStr).toISOString().split('T')[0];
+            if (filters.fromDate && ticketDate < filters.fromDate) matchDate = false;
+            if (filters.toDate && ticketDate > filters.toDate) matchDate = false;
+          } catch (e) {}
+        }
+      }
+
+      return matchSearch && matchStatus && matchTech && matchPayment && matchDate;
+    });
+
+    // Sort Export Data (Latest Ticket First)
+    filteredTickets.sort((a, b) => {
+      const numA = parseInt(String(a.ticketNumber || '').replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(String(b.ticketNumber || '').replace(/\D/g, ''), 10) || 0;
+      return numB - numA;
     });
 
     if (filteredTickets.length === 0) {
@@ -375,9 +395,49 @@ window.RapidBoy = window.RapidBoy || {};
 
     const finalCost = parseFloat(ticket.finalCost) || 0;
     const balanceDue = Math.max(0, finalCost - totalPaid);
-    const sparePartsListStr = ticket.sparePartsList || ticket.spareSerial || "None";
     const accessorySerialsStr = ticket.accessorySerial || "None";
     const accessoriesReceivedStr = ticket.accessories || "None";
+
+    // 🛠️ Detailed Spare Parts List Processing
+    let sparePartsTableHtml = '';
+    try {
+      let parsedParts = [];
+      if (Array.isArray(ticket.sparePartsList)) {
+        parsedParts = ticket.sparePartsList;
+      } else if (typeof ticket.sparePartsList === 'string' && ticket.sparePartsList.trim().startsWith('[')) {
+        parsedParts = JSON.parse(ticket.sparePartsList);
+      }
+
+      if (parsedParts && parsedParts.length > 0) {
+        const rows = parsedParts.map((p, i) => `
+          <tr>
+            <td style="border: 1px solid #CBD5E1; padding: 4px;">${i + 1}</td>
+            <td style="border: 1px solid #CBD5E1; padding: 4px;">${p.name || p.partName || p.item || 'Spare Part'}</td>
+            <td style="border: 1px solid #CBD5E1; padding: 4px;">${p.qty || p.quantity || 1}</td>
+            <td style="border: 1px solid #CBD5E1; padding: 4px;">₹${p.price || p.amount || p.rate || 0}</td>
+          </tr>
+        `).join('');
+
+        sparePartsTableHtml = `
+          <table style="width: 100%; border-collapse: collapse; margin-top: 4px; font-size: ${8 * scaleFactor}pt; font-weight: normal;">
+            <thead style="background: #F1F5F9;">
+              <tr>
+                <th style="border: 1px solid #CBD5E1; padding: 4px; text-align: left;">#</th>
+                <th style="border: 1px solid #CBD5E1; padding: 4px; text-align: left;">Part Name</th>
+                <th style="border: 1px solid #CBD5E1; padding: 4px; text-align: left;">Qty</th>
+                <th style="border: 1px solid #CBD5E1; padding: 4px; text-align: left;">Price</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+    } catch (e) {
+      console.warn("Could not parse spare parts array", e);
+    }
+
+    const sparePartsFallback = ticket.sparePartsList || ticket.spareSerial || "None";
+    const finalSparePartsRender = sparePartsTableHtml || `<span style="color: #0F172A; font-weight: 600;">${sparePartsFallback}</span>`;
 
     return `
       <div class="sheet-container" style="font-size: ${9.5 * scaleFactor}pt;">
@@ -431,7 +491,7 @@ window.RapidBoy = window.RapidBoy || {};
           </tr>
           <tr>
             <th>Installed Spare Parts</th>
-            <td colspan="3" style="color: #0F172A; font-weight: 600;">${sparePartsListStr}</td>
+            <td colspan="3">${finalSparePartsRender}</td>
           </tr>
           <tr>
             <th>Received Accessories</th>
@@ -687,6 +747,13 @@ window.RapidBoy = window.RapidBoy || {};
       }
 
       return matchSearch && matchStatus && matchTech && matchPayment && matchDate;
+    });
+
+    // 🚀 Sort Tickets (Latest Ticket First based on ticketNumber)
+    filteredTickets.sort((a, b) => {
+      const numA = parseInt(String(a.ticketNumber || '').replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(String(b.ticketNumber || '').replace(/\D/g, ''), 10) || 0;
+      return numB - numA;
     });
 
     if (filteredTickets.length === 0) {
