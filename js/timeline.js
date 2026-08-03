@@ -1,137 +1,163 @@
 /**
- * Rapid Boy Service Manager Pro V4.5 - Timeline & Audit Lifecycle Engine
- * Production Ready - Live Domain: https://rapidboy.netlify.app
+ * Rapid Boy Service Manager Pro V4.6 - Audit Timeline & Interactive Modal Engine
+ * Handles Ticket Lifecycle History, Financial Breakdown, and Tracking Actions
+ * Fixed: Light-theme readable text contrast colors
  */
 
 window.RapidBoy = window.RapidBoy || {};
 
 (function (App) {
-    'use strict';
+  'use strict';
 
-    App.Timeline = App.Timeline || {};
+  App.Timeline = App.Timeline || {};
 
-    const getSafeBaseDomain = () => {
-        const origin = window.location.origin;
-        if (origin && origin !== "null" && origin !== "file://" && !origin.startsWith("file://")) {
-            return origin;
-        }
-        return "https://rapidboy.netlify.app";
-    };
+  const getSafeBaseDomain = () => {
+    const origin = window.location.origin;
+    if (origin && origin !== "null" && origin !== "file://" && !origin.startsWith("file://")) {
+      return origin;
+    }
+    return "https://rapidboy.netlify.app";
+  };
 
-    App.Timeline.init = function () {
-        console.log("⏱️ Rapid Boy Timeline Core Active...");
-    };
+  App.Timeline.init = function () {
+    console.log("🕒 Rapid Boy Timeline Engine V4.6 Active...");
+  };
 
-    App.Timeline.showTicketTimelineModal = function (ticketNumberId) {
-        const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
+  App.Timeline.showTicketTimelineModal = function (ticketNumberId) {
+    const cleanSearchId = String(ticketNumberId).trim().toLowerCase();
+    const ticket = (App.State.tickets || []).find(t => String(t.ticketNumber).trim().toLowerCase() === cleanSearchId);
 
-        if (!ticket) {
-            if (App.UI && typeof App.UI.showToast === 'function') {
-                App.UI.showToast("Timeline Error", "Target ticket record not found.", "error");
-            }
-            return;
-        }
+    if (!ticket) {
+      if (App.UI && typeof App.UI.showToast === 'function') {
+        App.UI.showToast("Not Found", `Work order ${ticketNumberId} could not be located.`, "error");
+      }
+      return;
+    }
 
-        const modalTitle = document.getElementById('modal-card-title-string');
-        const modalBody = document.getElementById('modal-core-render-body-scroll');
-        const modalFooter = document.getElementById('modal-layout-footer-actions');
+    const modalBody = document.getElementById('modal-core-render-body-scroll');
+    const modalTitle = document.getElementById('modal-card-title-string');
+    const modalFooter = document.getElementById('modal-layout-footer-actions');
 
-        if (!modalTitle || !modalBody || !modalFooter) return;
+    if (!modalBody || !modalTitle || !modalFooter) return;
 
-        modalTitle.innerText = `Audit Lifecycle Trail [ ${ticket.ticketNumber} ]`;
+    modalTitle.innerText = `Audit Lifecycle & Details [ ${ticket.ticketNumber} ]`;
 
-        const baseDomain = getSafeBaseDomain();
-        const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+    // Financial Calculation from paymentHistory
+    let totalPaid = 0;
+    let historyArr = [];
+    if (ticket.paymentHistory) {
+      try {
+        historyArr = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
+      } catch (e) {
+        historyArr = [];
+      }
+    } else {
+      totalPaid = parseFloat(ticket.advance) || 0;
+    }
+    historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
 
-        let timelineEvents = [];
-        try {
-            if (typeof ticket.timeline === 'string' && ticket.timeline.trim().length > 0) {
-                timelineEvents = JSON.parse(ticket.timeline);
-            } else if (Array.isArray(ticket.timeline)) {
-                timelineEvents = ticket.timeline;
-            }
-        } catch (e) {
-            timelineEvents = [];
-        }
+    const finalCost = parseFloat(ticket.finalCost) || 0;
+    const calculatedBalanceDue = Math.max(0, finalCost - totalPaid);
 
-        let timelineHtml = `
-        <div style="display: flex; flex-direction: column; gap: 16px; padding: 10px 0;">
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <strong style="color: var(--accent-cyan); font-size: 1.05rem;">${App.Utils.sanitizeHTML(ticket.customerName)}</strong>
-        <span style="background: var(--accent-primary); color: #fff; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
-        ${App.Utils.sanitizeHTML(ticket.status || 'Pending')}
-        </span>
-        </div>
-        <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.4;">
-        📱 <b>Device:</b> ${App.Utils.sanitizeHTML(ticket.deviceType || 'Hardware')} - ${App.Utils.sanitizeHTML(ticket.brand || '')} ${App.Utils.sanitizeHTML(ticket.model || '')}<br>
-        🏷️ <b>Serials:</b> S/N: ${App.Utils.sanitizeHTML(ticket.serialNumber || 'N/A')} | Spare: ${App.Utils.sanitizeHTML(ticket.spareSerial || 'N/A')}<br>
-        📞 <b>Phone:</b> ${App.Utils.sanitizeHTML(ticket.phoneNumber || 'N/A')} ${ticket.referralPerson ? '• <b>Ref:</b> ' + App.Utils.sanitizeHTML(ticket.referralPerson) : ''}<br>
-        👨‍💻 <b>Assigned Techs:</b> ${App.Utils.sanitizeHTML(ticket.technician || 'Unassigned')}
-        </div>
-        </div>
+    const baseDomain = getSafeBaseDomain();
+    const trackingLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
 
-        <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 10px; font-size: 0.85rem;">
-        <div style="color: #10b981; font-weight: 700; margin-bottom: 6px;">💳 Financial Ledger</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; color: #e2e8f0;">
-        <div><b>Final Cost:</b> ₹${ticket.finalCost || 0}</div>
-        <div><b>Advance:</b> ₹${ticket.advance || 0}</div>
-        <div><b>Balance:</b> <span style="color: #ef4444; font-weight: 700;">₹${ticket.balance || 0}</span></div>
-        <div><b>Payment Mode:</b> <span style="color: #06b6d4; font-weight: 700;">${App.Utils.sanitizeHTML(ticket.paymentMethod || 'Cash')}</span></div>
-        </div>
-        ${ticket.cashReceiver ? `<div style="margin-top: 6px; color: #f59e0b;">💵 <b>Cash Received By:</b> ${App.Utils.sanitizeHTML(ticket.cashReceiver)}</div>` : ''}
-        </div>
+    // Parse Timeline audit logs
+    let timelineEvents = [];
+    if (ticket.timeline) {
+      try {
+        timelineEvents = typeof ticket.timeline === 'string' ? JSON.parse(ticket.timeline) : ticket.timeline;
+      } catch (e) {
+        timelineEvents = [];
+      }
+    }
 
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; font-size: 0.85rem;">
-        <strong style="color: var(--accent-magenta);">⏱️ Detailed Status Audit Logs (Who, When, From → To):</strong>
-        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-        `;
-
-        if (timelineEvents.length === 0) {
-            timelineHtml += `<p style="color: #94a3b8; font-style: italic; margin: 0;">No audit logs recorded yet.</p>`;
-        } else {
-            timelineEvents.forEach(ev => {
-                timelineHtml += `
-                <div style="border-left: 2px solid var(--accent-cyan); padding-left: 10px; font-size: 0.82rem; background: rgba(255,255,255,0.01); padding: 6px 10px; border-radius: 4px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <span style="color: var(--accent-cyan); font-weight: 700;">👤 Agent: ${App.Utils.sanitizeHTML(ev.username || 'Operator')}</span>
-                <span style="color: #94a3b8; font-size: 0.73rem;">📅 ${App.Utils.sanitizeHTML(ev.date || '')} ⏰ ${App.Utils.sanitizeHTML(ev.time || '')}</span>
-                </div>
-                <div style="color: #38bdf8; font-weight: 600; font-size: 0.8rem; margin: 2px 0;">🔄 Transition: ${App.Utils.sanitizeHTML(ev.transition || 'Status Change')}</div>
-                <div style="color: #e2e8f0;">📝 <b>Memo:</b> ${App.Utils.sanitizeHTML(ev.notes || 'No notes provided.')}</div>
-                </div>
-                `;
-            });
-        }
-
+    let timelineHtml = "";
+    if (timelineEvents.length === 0) {
+      timelineHtml = `<div style="font-size: 0.85rem; color: #64748B; font-style: italic; padding: 10px 0;">No audit transition logs recorded yet.</div>`;
+    } else {
+      timelineEvents.forEach(ev => {
         timelineHtml += `
-        </div>
-        </div>
-
-        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); word-break: break-all;">
-        <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Customer Tracking Link:</span>
-        <a href="${liveTrackerLink}" target="_blank" style="display: block; color: #60a5fa; font-size: 0.85rem; margin-top: 4px; text-decoration: underline;">
-        ${liveTrackerLink}
-        </a>
-        </div>
-        </div>
+          <div style="position: relative; padding-left: 14px; margin-bottom: 14px; border-left: 2px solid #2563EB;">
+            <div style="font-size: 0.75rem; color: #475569; margin-bottom: 2px; font-weight: 600;">
+              ${App.Utils.sanitizeHTML(ev.date || '')} – ${App.Utils.sanitizeHTML(ev.time || '')} 
+              <span style="font-weight: 700; color: #2563EB; margin-left: 6px;">[${App.Utils.sanitizeHTML(ev.username || 'System Operator')}]</span>
+            </div>
+            <div style="font-size: 0.88rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">
+              ${App.Utils.sanitizeHTML(ev.transition || 'Status Update')}
+            </div>
+            <div style="font-size: 0.82rem; color: #334155; background: #F8FAFC; padding: 8px 12px; border-radius: 6px; border: 1px solid #CBD5E1;">
+              ${App.Utils.sanitizeHTML(ev.notes || 'No notes provided.')}
+            </div>
+          </div>
         `;
+      });
+    }
 
-        modalBody.innerHTML = timelineHtml;
+    modalBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Client & Device Summary Block -->
+        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="color: #0F172A; font-size: 1rem;">${App.Utils.sanitizeHTML(ticket.customerName)}</strong>
+            <span style="background: rgba(37, 99, 235, 0.1); color: #2563EB; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${App.Utils.sanitizeHTML(ticket.customerType || 'Customer')}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #334155; margin-bottom: 4px;">📞 Phone: <strong style="color: #0F172A;">${App.Utils.sanitizeHTML(ticket.phoneNumber)}</strong></div>
+          <div style="font-size: 0.85rem; color: #334155;">💻 Device: <strong style="color: #0F172A;">${App.Utils.sanitizeHTML(ticket.deviceType || 'Hardware')} – ${App.Utils.sanitizeHTML(ticket.brand || '')} ${App.Utils.sanitizeHTML(ticket.model || '')}</strong></div>
+          ${ticket.serialNumber ? `<div style="font-size: 0.82rem; color: #334155; margin-top: 4px;">S/N: <code style="color: #2563EB; font-weight: 600;">${App.Utils.sanitizeHTML(ticket.serialNumber)}</code></div>` : ''}
+        </div>
 
-        modalFooter.innerHTML = `
-        <button type="button" class="btn btn-primary btn-small" onclick="window.RapidBoy.UI.shareTicketToWhatsApp('${ticket.ticketNumber}')">
-        <span class="material-icons-round">share</span>
-        <span>Share WhatsApp</span>
-        </button>
-        <button type="button" class="btn btn-secondary btn-small" onclick="window.RapidBoy.UI.closeSystemModal()">
-        <span>Close</span>
-        </button>
-        `;
+        <!-- Financial Breakdown Block -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 12px; text-align: center;">
+          <div>
+            <span style="font-size: 0.7rem; color: #475569; display: block; font-weight: 700;">FINAL COST</span>
+            <span style="font-size: 0.95rem; font-weight: 700; color: #2563EB;">₹${finalCost}</span>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: #475569; display: block; font-weight: 700;">TOTAL PAID</span>
+            <span style="font-size: 0.95rem; font-weight: 700; color: #10B981;">₹${totalPaid}</span>
+          </div>
+          <div>
+            <span style="font-size: 0.7rem; color: #475569; display: block; font-weight: 700;">BALANCE DUE</span>
+            <span style="font-size: 0.95rem; font-weight: 700; color: #EF4444;">₹${calculatedBalanceDue}</span>
+          </div>
+        </div>
 
-        if (App.UI && typeof App.UI.openSystemModal === 'function') {
-            App.UI.openSystemModal();
-        }
-    };
+        <!-- Issues -->
+        <div style="font-size: 0.85rem; color: #1E293B; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 10px;">
+          <strong style="color: #B45309;">Reported Issues:</strong> ${App.Utils.sanitizeHTML(ticket.issue || 'N/A')}
+        </div>
 
-})(window.RapidBoy);
+        <!-- Live Tracker Share Link Row -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" readonly value="${trackingLink}" style="flex: 1; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 6px; padding: 8px 10px; font-size: 0.8rem; color: #0F172A;">
+          <button type="button" class="btn btn-secondary btn-small" onclick="navigator.clipboard.writeText('${trackingLink}'); window.RapidBoy.UI.showToast('Copied', 'Live tracking link copied to clipboard.', 'success');">
+            <span class="material-icons-round" style="font-size: 1rem;">content_copy</span>
+            <span>Copy Link</span>
+          </button>
+        </div>
+
+        <!-- Audit Timeline History -->
+        <div>
+          <h4 style="font-size: 0.9rem; color: #0F172A; margin-bottom: 12px; border-bottom: 1px solid #CBD5E1; padding-bottom: 6px;">Audit Trail & Status History</h4>
+          <div style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+            ${timelineHtml}
+          </div>
+        </div>
+      </div>
+    `;
+
+    modalFooter.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-small" onclick="window.RapidBoy.UI.closeSystemModal()">Close</button>
+      <button type="button" class="btn btn-primary btn-small" onclick="window.RapidBoy.UI.shareTicketToWhatsApp('${ticket.ticketNumber}')">
+        <span class="material-icons-round" style="font-size: 1rem;">share</span>
+        <span>WhatsApp</span>
+      </button>
+    `;
+
+    if (App.UI && typeof App.UI.openSystemModal === 'function') {
+      App.UI.openSystemModal();
+    }
+  };
+
+})(window.RapidBoy);s
