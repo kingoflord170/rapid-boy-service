@@ -13,9 +13,6 @@ window.RapidBoy = window.RapidBoy || {};
   App.UI = App.UI || {};
   App.Navigation = App.Navigation || {};
 
-  /**
-   * Safely resolve current website domain (Avoids 'null' during local preview)
-   */
   const getSafeBaseDomain = () => {
     const origin = window.location.origin;
     if (origin && origin !== "null" && origin !== "file://" && !origin.startsWith("file://")) {
@@ -24,9 +21,6 @@ window.RapidBoy = window.RapidBoy || {};
     return "https://rapidboy.netlify.app";
   };
 
-  /**
-   * Robust local timezone ISO date helper (Prevents UTC date mismatch in India)
-   */
   const getLocalISODate = () => {
     const d = new Date();
     const offset = d.getTimezoneOffset();
@@ -219,9 +213,6 @@ window.RapidBoy = window.RapidBoy || {};
     }
   };
 
-  /**
-   * 📲 WHATSAPP DISPATCHER
-   */
   App.UI.shareTicketToWhatsApp = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
@@ -248,9 +239,6 @@ window.RapidBoy = window.RapidBoy || {};
     window.open(`https://api.whatsapp.com/send?phone=${phoneWithCountry}&text=${encodeURIComponent(messageText)}`, '_blank');
   };
 
-  /**
-   * 👑 ADMIN-ONLY FILTERED DATA EXPORT (CSV)
-   */
   App.UI.exportFilteredTicketsCSV = function () {
     if (!App.State.user || App.State.user.role !== 'Administrator') {
       App.UI.showToast("Access Denied", "Only administrators can export ledger datasets.", "error");
@@ -315,9 +303,6 @@ window.RapidBoy = window.RapidBoy || {};
     App.UI.showToast("Export Successful", `Downloaded ${filteredTickets.length} filtered work orders.`, "success");
   };
 
-  /**
-   * 🖨️ PRINT SELECTION MODAL (A4, A5, Thermal)
-   */
   App.UI.showPrintOptionsModal = function (ticketNumberId) {
     const modalBody = document.getElementById('modal-core-render-body-scroll');
     const modalTitle = document.getElementById('modal-card-title-string');
@@ -353,9 +338,6 @@ window.RapidBoy = window.RapidBoy || {};
     App.UI.openSystemModal();
   };
 
-  /**
-   * 🖨️ Professional Corporate A4 Service Job Sheet & Invoice Print Engine
-   */
   App.UI.printTicketA4Format = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
@@ -430,7 +412,6 @@ window.RapidBoy = window.RapidBoy || {};
       </head>
       <body>
         <div class="sheet-container">
-          <!-- Header -->
           <table class="header-table">
             <tr>
               <td>
@@ -446,7 +427,6 @@ window.RapidBoy = window.RapidBoy || {};
             </tr>
           </table>
 
-          <!-- Customer & Device Overview -->
           <table class="grid-2">
             <tr>
               <td>
@@ -464,7 +444,6 @@ window.RapidBoy = window.RapidBoy || {};
             </tr>
           </table>
 
-          <!-- Device Specifications -->
           <div class="section-title">Device & Hardware Specifications</div>
           <table class="info-table">
             <tr>
@@ -483,7 +462,6 @@ window.RapidBoy = window.RapidBoy || {};
             </tr>
           </table>
 
-          <!-- Financial Breakdown -->
           <div class="section-title">Financial Ledger Summary</div>
           <table class="fin-box">
             <tr>
@@ -502,19 +480,16 @@ window.RapidBoy = window.RapidBoy || {};
             </tr>
           </table>
 
-          <!-- Live Status Tracker URL info -->
           <div style="margin-top: 15px; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 8pt; color: #475569;">🌐 <strong>Live Status Tracker URL:</strong> ${trackingLink}</span>
+            <span style="font-size: 8pt; color: #475569;">🌐 <strong>Live Status Tracker URL:</strong> ${liveTrackerLink}</span>
           </div>
 
-          <!-- Terms & Conditions -->
           <div class="terms-box">
             <strong>Terms & Conditions:</strong> 
             1. Devices left over 30 days after repair completion will incur storage charges or management disposal. 
             2. Warranty voids if physical/liquid damage occurs post-service. Data backup is customer's responsibility.
           </div>
 
-          <!-- Signatures -->
           <table class="sign-table">
             <tr>
               <td>
@@ -533,9 +508,6 @@ window.RapidBoy = window.RapidBoy || {};
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 350);
   };
 
-  /**
-   * Dedicated Compact A5 Print Engine (Fixed Lookup Bug)
-   */
   App.UI.printTicketA5Format = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
@@ -579,9 +551,6 @@ window.RapidBoy = window.RapidBoy || {};
     setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
   };
 
-  /**
-   * Dedicated 58mm Thermal Receipt Print Engine (Fixed Lookup Bug)
-   */
   App.UI.printTicketThermalFormat = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
@@ -631,9 +600,6 @@ window.RapidBoy = window.RapidBoy || {};
 
 })(window.RapidBoy);
 
-/**
- * Grid Card Matrix Attachment (V4.6: Print Option Trigger on Footer)
- */
 (function (App) {
   'use strict';
 
