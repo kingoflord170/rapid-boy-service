@@ -11,7 +11,7 @@ window.RapidBoy = window.RapidBoy || {};
     App.Api = App.Api || {};
 
     // Replace with your active Google Apps Script Web App Deployment URL
-    const WEB_APP_URL = "[https://script.google.com/macros/s/AKfycbwdcFts5FgqK81mELSIrGQn_ytaAUgYBjVbQsnPTUitSv089MwI7Fcd7jlCxmNiv9jIqA/exec](https://script.google.com/macros/s/AKfycbwdcFts5FgqK81mELSIrGQn_ytaAUgYBjVbQsnPTUitSv089MwI7Fcd7jlCxmNiv9jIqA/exec) ";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwdcFts5FgqK81mELSIrGQn_ytaAUgYBjVbQsnPTUitSv089MwI7Fcd7jlCxmNiv9jIqA/exec";
 
     // Request Timeout configuration (15 seconds)
     const API_TIMEOUT_MS = 15000;
