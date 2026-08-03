@@ -1,6 +1,8 @@
 /**
  * Rapid Boy Service Manager Pro V4.6 - User Interface, Navigation & Print Engine
  * Production Ready - Live Domain: https://rapidboy.netlify.app
+ * Features: Local Timezone Helpers, Print Options Menu, Professional Corporate A4 Job Sheet, 
+ * Fixed A5/Thermal Lookups, and Secure Data Actions.
  */
 
 window.RapidBoy = window.RapidBoy || {};
@@ -314,13 +316,68 @@ window.RapidBoy = window.RapidBoy || {};
   };
 
   /**
-   * 🖨️ A4, A5, & Thermal Print Engines
+   * 🖨️ PRINT SELECTION MODAL (A4, A5, Thermal)
+   */
+  App.UI.showPrintOptionsModal = function (ticketNumberId) {
+    const modalBody = document.getElementById('modal-core-render-body-scroll');
+    const modalTitle = document.getElementById('modal-card-title-string');
+    const modalFooter = document.getElementById('modal-layout-footer-actions');
+
+    if (!modalBody || !modalTitle || !modalFooter) return;
+
+    modalTitle.innerText = `Select Print Format [ ${ticketNumberId} ]`;
+
+    modalBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 10px 0;">
+        <button type="button" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; font-weight: 600;" onclick="window.RapidBoy.UI.printTicketA4Format('${ticketNumberId}'); window.RapidBoy.UI.closeSystemModal();">
+          <span style="display: flex; align-items: center; gap: 8px;"><span class="material-icons-round" style="color: var(--accent-primary);">description</span> A4 Print Format</span>
+          <span style="font-size: 0.75rem; color: #64748B;">Standard Document</span>
+        </button>
+
+        <button type="button" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; font-weight: 600;" onclick="window.RapidBoy.UI.printTicketA5Format('${ticketNumberId}'); window.RapidBoy.UI.closeSystemModal();">
+          <span style="display: flex; align-items: center; gap: 8px;"><span class="material-icons-round" style="color: var(--status-emerald);">receipt</span> A5 Print Format</span>
+          <span style="font-size: 0.75rem; color: #64748B;">Compact Sheet</span>
+        </button>
+
+        <button type="button" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: space-between; padding: 14px; font-weight: 600;" onclick="window.RapidBoy.UI.printTicketThermalFormat('${ticketNumberId}'); window.RapidBoy.UI.closeSystemModal();">
+          <span style="display: flex; align-items: center; gap: 8px;"><span class="material-icons-round" style="color: var(--status-amber);">print</span> 58mm Thermal Print</span>
+          <span style="font-size: 0.75rem; color: #64748B;">Receipt Roll</span>
+        </button>
+      </div>
+    `;
+
+    modalFooter.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-small" onclick="window.RapidBoy.UI.closeSystemModal()">Cancel</button>
+    `;
+
+    App.UI.openSystemModal();
+  };
+
+  /**
+   * 🖨️ Professional Corporate A4 Service Job Sheet & Invoice Print Engine
    */
   App.UI.printTicketA4Format = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
     if (!ticket) return;
+
     const baseDomain = getSafeBaseDomain();
     const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+
+    let totalPaid = 0;
+    let historyArr = [];
+    if (ticket.paymentHistory) {
+      try {
+        historyArr = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
+      } catch (e) { historyArr = []; }
+    }
+    if (historyArr.length === 0 && ticket.advance && parseFloat(ticket.advance) > 0) {
+      totalPaid = parseFloat(ticket.advance) || 0;
+    } else {
+      historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
+    }
+
+    const finalCost = parseFloat(ticket.finalCost) || 0;
+    const balanceDue = Math.max(0, finalCost - totalPaid);
 
     let iframe = document.getElementById('rapidboy-print-iframe');
     if (iframe) iframe.remove();
@@ -336,30 +393,148 @@ window.RapidBoy = window.RapidBoy || {};
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <meta charset="UTF-8"><title>A4 Print - ${ticket.ticketNumber}</title>
+        <meta charset="UTF-8">
+        <title>JobSheet - ${ticket.ticketNumber}</title>
         <style>
-          @page { size: A4 portrait; margin: 10mm; }
-          body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; color: #000; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-          th, td { border: 1px solid #000; padding: 8px 10px; font-size: 9.5pt; text-align: left; }
-          th { background: #f0f0f0; }
+          @page { size: A4 portrait; margin: 12mm; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5pt; color: #1E293B; line-height: 1.4; margin: 0; padding: 0; }
+          .sheet-container { width: 100%; border: 1.5px solid #CBD5E1; border-radius: 8px; padding: 20px; box-sizing: border-box; background: #FFFFFF; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border-bottom: 2px solid #2563EB; padding-bottom: 12px; }
+          .header-table td { border: none; vertical-align: middle; }
+          .company-title { font-size: 18pt; font-weight: 800; color: #2563EB; margin: 0; letter-spacing: 0.5px; }
+          .company-subtitle { font-size: 8.5pt; color: #64748B; margin: 2px 0 0 0; }
+          .doc-badge { text-align: right; }
+          .doc-badge h3 { font-size: 13pt; margin: 0; color: #0F172A; text-transform: uppercase; }
+          .doc-badge p { font-size: 8pt; color: #475569; margin: 2px 0 0 0; }
+          
+          .section-title { font-size: 9pt; font-weight: 700; color: #2563EB; text-transform: uppercase; margin: 14px 0 6px 0; border-bottom: 1px solid #E2E8F0; padding-bottom: 3px; }
+          
+          .grid-2 { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .grid-2 td { width: 50%; border: 1.5px solid #CBD5E1; padding: 10px; vertical-align: top; background: #F8FAFC; }
+          
+          .info-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .info-table th, .info-table td { border: 1px solid #CBD5E1; padding: 7px 10px; font-size: 9pt; text-align: left; }
+          .info-table th { background: #F1F5F9; color: #334155; font-weight: 700; width: 28%; }
+          .info-table td { color: #0F172A; }
+
+          .fin-box { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          .fin-box td { border: 1px solid #CBD5E1; padding: 8px; text-align: center; background: #EFF6FF; }
+          .fin-box td.label { font-size: 7.5pt; font-weight: 700; color: #475569; display: block; }
+          .fin-box td.val { font-size: 11pt; font-weight: 800; color: #0F172A; }
+
+          .terms-box { font-size: 7.5pt; color: #64748B; margin-top: 15px; border-top: 1px dashed #CBD5E1; padding-top: 8px; }
+          .sign-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+          .sign-table td { border: none; width: 50%; text-align: center; font-size: 8.5pt; color: #475569; padding-top: 25px; }
+          .sign-line { border-top: 1px solid #94A3B8; width: 70%; margin: 0 auto; padding-top: 4px; }
         </style>
       </head>
       <body>
-        <h2>RAPID BOY SERVICE CENTER - WORK ORDER</h2>
-        <p><strong>Ticket:</strong> ${ticket.ticketNumber} | <strong>Customer:</strong> ${ticket.customerName} (${ticket.phoneNumber})</p>
-        <p><strong>Device:</strong> ${ticket.deviceType} - ${ticket.brand} ${ticket.model} | <strong>Status:</strong> ${ticket.status}</p>
-        <p><strong>Issues:</strong> ${ticket.issue}</p>
-        <p><strong>Final Cost:</strong> ₹${ticket.finalCost || 0} | <strong>Tracker:</strong> ${liveTrackerLink}</p>
+        <div class="sheet-container">
+          <!-- Header -->
+          <table class="header-table">
+            <tr>
+              <td>
+                <h1 class="company-title">RAPID BOY SERVICE CENTER</h1>
+                <p class="company-subtitle">Advanced Chip-Level Laptop, PC & Mobile Service Hub | Thanjavur</p>
+                <p class="company-subtitle">📞 Helpline: +91 96776 00190 / 95008 30615</p>
+              </td>
+              <td class="doc-badge">
+                <h3>JOB SHEET / INVOICE</h3>
+                <p><strong>Ticket ID:</strong> ${ticket.ticketNumber}</p>
+                <p><strong>Date:</strong> ${ticket.createdDate || new Date().toLocaleDateString('en-IN')}</p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Customer & Device Overview -->
+          <table class="grid-2">
+            <tr>
+              <td>
+                <div class="section-title" style="margin-top:0;">Customer Information</div>
+                <p style="margin: 4px 0;"><strong>Name:</strong> ${ticket.customerName}</p>
+                <p style="margin: 4px 0;"><strong>Phone:</strong> ${ticket.phoneNumber}</p>
+                <p style="margin: 4px 0;"><strong>Customer Type:</strong> ${ticket.customerType || 'Customer'}</p>
+              </td>
+              <td>
+                <div class="section-title" style="margin-top:0;">Service Metadata</div>
+                <p style="margin: 4px 0;"><strong>Inward ID:</strong> ${ticket.inwardNumber || 'N/A'}</p>
+                <p style="margin: 4px 0;"><strong>Assigned Tech:</strong> ${ticket.technician || 'Unassigned'}</p>
+                <p style="margin: 4px 0;"><strong>Current Status:</strong> <span style="color: #2563EB; font-weight: bold;">${ticket.status}</span></p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Device Specifications -->
+          <div class="section-title">Device & Hardware Specifications</div>
+          <table class="info-table">
+            <tr>
+              <th>Device Category</th>
+              <td>${ticket.deviceType || 'Hardware'}</td>
+              <th>Brand & Model</th>
+              <td>${ticket.brand || ''} ${ticket.model || ''}</td>
+            </tr>
+            <tr>
+              <th>Serial Number / IMEI</th>
+              <td colspan="3"><code style="color: #2563EB; font-weight: bold;">${ticket.serialNumber || 'Not Provided'}</code></td>
+            </tr>
+            <tr>
+              <th>Reported Issue</th>
+              <td colspan="3" style="color: #B45309; font-weight: 600;">${ticket.issue || 'Diagnostics Required'}</td>
+            </tr>
+          </table>
+
+          <!-- Financial Breakdown -->
+          <div class="section-title">Financial Ledger Summary</div>
+          <table class="fin-box">
+            <tr>
+              <td>
+                <span class="label">FINAL AGREED COST</span>
+                <span class="val" style="color: #2563EB;">₹${finalCost}</span>
+              </td>
+              <td>
+                <span class="label">TOTAL PAID AMOUNT</span>
+                <span class="val" style="color: #10B981;">₹${totalPaid}</span>
+              </td>
+              <td>
+                <span class="label">BALANCE DUE</span>
+                <span class="val" style="color: #EF4444;">₹${balanceDue}</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Live Status Tracker URL info -->
+          <div style="margin-top: 15px; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 8pt; color: #475569;">🌐 <strong>Live Status Tracker URL:</strong> ${trackingLink}</span>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div class="terms-box">
+            <strong>Terms & Conditions:</strong> 
+            1. Devices left over 30 days after repair completion will incur storage charges or management disposal. 
+            2. Warranty voids if physical/liquid damage occurs post-service. Data backup is customer's responsibility.
+          </div>
+
+          <!-- Signatures -->
+          <table class="sign-table">
+            <tr>
+              <td>
+                <div class="sign-line">Customer Signature</div>
+              </td>
+              <td>
+                <div class="sign-line">Authorized Signatory (Rapid Boy)</div>
+              </td>
+            </tr>
+          </table>
+        </div>
       </body>
       </html>
     `);
     doc.close();
-    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 350);
   };
 
   /**
-   * Dedicated Compact A5 Print Engine
+   * Dedicated Compact A5 Print Engine (Fixed Lookup Bug)
    */
   App.UI.printTicketA5Format = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
@@ -405,7 +580,7 @@ window.RapidBoy = window.RapidBoy || {};
   };
 
   /**
-   * Dedicated 58mm Thermal Receipt Print Engine
+   * Dedicated 58mm Thermal Receipt Print Engine (Fixed Lookup Bug)
    */
   App.UI.printTicketThermalFormat = function (ticketNumberId) {
     const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
@@ -457,7 +632,7 @@ window.RapidBoy = window.RapidBoy || {};
 })(window.RapidBoy);
 
 /**
- * Grid Card Matrix Attachment (V4.6 using paymentHistory for Balance & Accurate Mark Paid with Legacy Fallback)
+ * Grid Card Matrix Attachment (V4.6: Print Option Trigger on Footer)
  */
 (function (App) {
   'use strict';
@@ -509,7 +684,6 @@ window.RapidBoy = window.RapidBoy || {};
 
       const rawTicketNum = ticket.ticketNumber ? String(ticket.ticketNumber).trim() : '';
 
-      // Compute total paid from paymentHistory accurately with legacy fallback support
       let totalPaid = 0;
       let historyArr = [];
       if (ticket.paymentHistory) {
@@ -526,11 +700,6 @@ window.RapidBoy = window.RapidBoy || {};
 
       const finalCost = parseFloat(ticket.finalCost) || 0;
       const balanceDue = Math.max(0, finalCost - totalPaid);
-
-      const isUnpaid = balanceDue > 0;
-      const payCheckButton = isUnpaid
-        ? `<button class="btn-icon-round" title="Unpaid / Balance Due (Click to Clear Balance)" onclick="window.RapidBoy.Tickets.markPaymentReceived('${rawTicketNum}')"><span class="material-icons-round" style="color: var(--status-amber);">radio_button_unchecked</span></button>`
-        : `<button class="btn-icon-round" title="Payment Fully Cleared" style="cursor: default;"><span class="material-icons-round" style="color: var(--status-emerald);">check_circle</span></button>`;
 
       compiledGridHtml += `
         <div class="ticket-data-node-card">
@@ -568,12 +737,14 @@ window.RapidBoy = window.RapidBoy || {};
           </div>
 
           <div class="form-actions-footer-bar" style="margin-top: 15px; padding-top: 12px; justify-content: flex-end; gap: 8px;">
-            ${payCheckButton}
             <button class="btn-icon-round" title="View Audit Lifecycle" onclick="window.RapidBoy.Timeline.showTicketTimelineModal('${rawTicketNum}')">
               <span class="material-icons-round" style="font-size: 1.1rem;">history</span>
             </button>
             <button class="btn-icon-round" title="Edit Work Order" onclick="window.RapidBoy.Form.loadTicketIntoEditorForm('${rawTicketNum}')">
               <span class="material-icons-round" style="font-size: 1.1rem;">edit</span>
+            </button>
+            <button class="btn-icon-round" title="Print Job Sheet / Receipt" onclick="window.RapidBoy.UI.showPrintOptionsModal('${rawTicketNum}')">
+              <span class="material-icons-round" style="font-size: 1.1rem; color: var(--accent-primary);">print</span>
             </button>
             <button class="btn-icon-round" title="Share WhatsApp Message" onclick="window.RapidBoy.UI.shareTicketToWhatsApp('${rawTicketNum}')">
               <span class="material-icons-round" style="font-size: 1.1rem; color: #10B981;">share</span>
@@ -584,73 +755,6 @@ window.RapidBoy = window.RapidBoy || {};
     });
 
     gridContainer.innerHTML = compiledGridHtml;
-  };
-
-  /**
-   * 💰 Mark Payment Received with robust legacy advance migration to paymentHistory
-   */
-  App.Tickets.markPaymentReceived = async function (ticketNumberId) {
-    const ticket = App.State.tickets.find(t => String(t.ticketNumber).trim().toLowerCase() === String(ticketNumberId).trim().toLowerCase());
-    if (!ticket) return;
-
-    let historyArr = [];
-    if (ticket.paymentHistory) {
-      try {
-        historyArr = typeof ticket.paymentHistory === 'string' ? JSON.parse(ticket.paymentHistory) : ticket.paymentHistory;
-      } catch(e) { historyArr = []; }
-    }
-
-    // Migrate legacy advance if history array is empty but advance exists
-    if (historyArr.length === 0 && ticket.advance && parseFloat(ticket.advance) > 0) {
-      historyArr.push({
-        amount: parseFloat(ticket.advance),
-        mode: ticket.paymentMethod || "Cash",
-        receiver: "System (Legacy)",
-        dateISO: new Date().toISOString().split('T')[0],
-        dateTime: "Legacy Advance"
-      });
-    }
-
-    let totalPaid = 0;
-    historyArr.forEach(p => totalPaid += parseFloat(p.amount) || 0);
-
-    const finalCost = parseFloat(ticket.finalCost) || 0;
-    const balanceDue = Math.max(0, finalCost - totalPaid);
-
-    if (balanceDue <= 0) {
-      App.UI.showToast("Notice", "This ticket is already fully paid.", "info");
-      return;
-    }
-
-    ticket.paymentMethod = "Cash";
-    const d = new Date();
-    const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
-    const localISOString = localDate.toISOString().split('T')[0];
-
-    historyArr.push({
-      amount: balanceDue,
-      mode: "Cash",
-      receiver: "Anand",
-      dateISO: localISOString,
-      dateTime: d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    });
-    ticket.paymentHistory = JSON.stringify(historyArr);
-
-    try {
-      await App.Utils.executeSecureOperation(async () => {
-        const activeDriver = window.API || window.Api || App.Api;
-        const res = await activeDriver.transmitPayload({ action: 'updateTicket', ...ticket });
-        if (res && res.status === "success") {
-          App.UI.showToast("Payment Cleared", `Added remaining balance of ₹${balanceDue}. Fully Paid!`, "success");
-          await App.UI.refreshGlobalDataStream(true);
-        } else {
-          throw new Error(res.message || "Failed to update payment status.");
-        }
-      }, "Clearing remaining balance...");
-    } catch (err) {
-      console.error("Mark payment received error:", err);
-    }
   };
 
 })(window.RapidBoy);
