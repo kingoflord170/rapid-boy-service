@@ -469,7 +469,7 @@ window.RapidBoy = window.RapidBoy || {};
               <div class="section-title" style="margin-top:0; font-size: ${9 * scaleFactor}pt;">Service Metadata</div>
               <p style="margin: 3px 0;"><strong>Inward ID:</strong> ${ticket.inwardNumber || 'N/A'}</p>
               <p style="margin: 3px 0;"><strong>Current Status:</strong> <span style="color: #2563EB; font-weight: bold;">${ticket.status}</span></p>
-              <p><strong>Estimated Service Duration:</strong> ${ticket.estDelivery || "2–7 Working Days"}</p>
+              <p><strong>Estimated Service Duration:</strong> ${ticket.deliveryDate}</p>
             </td>
           </tr>
         </table>
