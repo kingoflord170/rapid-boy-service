@@ -520,8 +520,32 @@ window.RapidBoy = window.RapidBoy || {};
             </td>
           </tr>
         </table>
+        ${ticket.remarks ? `
+<div style="
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+">
+    <div style="
+        font-size: 9px;
+        font-weight: 700;
+        color: #2563eb;
+        margin-bottom: 5px;
+    ">
+        TECHNICAL REMARKS / DESCRIPTION
+    </div>
 
-        ${ticket.remarks ? `<div style="margin-top: 8px; font-size: ${8.5 * scaleFactor}pt; color: #334155;"><strong>Remarks:</strong> ${ticket.remarks}</div>` : ''}
+    <div style="
+        font-size: 10px;
+        color: #1e293b;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    ">
+        ${ticket.remarks}
+    </div>
+</div>
+` : ''}
 
         <div style="margin-top: 10px; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 6px 10px; border-radius: 6px;">
           <span style="font-size: ${7.5 * scaleFactor}pt; color: #475569;">🌐 <strong>Live Status Tracker URL:</strong> ${liveTrackerLink}</span>
