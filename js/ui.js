@@ -377,6 +377,7 @@ window.RapidBoy = window.RapidBoy || {};
    * Helper to generate professional job sheet HTML markup (Shared between A4 and A5 with scaling)
    */
   const generateJobSheetMarkup = function (ticket, scaleFactor = 1) {
+    console.log(ticket);
     const baseDomain = getSafeBaseDomain();
     const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
 
