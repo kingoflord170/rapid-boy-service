@@ -445,11 +445,12 @@ window.RapidBoy = window.RapidBoy || {};
           <tr>
             <td>
               <h1 class="company-title" style="font-size: ${18 * scaleFactor}pt;">RAPID BOY SERVICE CENTER</h1>
-              <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">Advanced Chip-Level Laptop, PC & Mobile Service Hub | Thanjavur</p>
+              <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">Advanced Chip-Level Service<br>
+              Desktop & Laptop Service Center | Thanjavur</p>
               <p class="company-subtitle" style="font-size: ${8.5 * scaleFactor}pt;">📞 Helpline: +91 96776 00190</p>
             </td>
             <td class="doc-badge">
-              <h3 style="font-size: ${13 * scaleFactor}pt;">JOB SHEET / INVOICE</h3>
+              <h3 style="font-size: ${13 * scaleFactor}pt;">JOB SHEET / INWARD</h3>
               <p style="font-size: ${8 * scaleFactor}pt;"><strong>Ticket ID:</strong> ${ticket.ticketNumber}</p>
               <p style="font-size: ${8 * scaleFactor}pt;"><strong>Date:</strong> ${ticket.createdDate || new Date().toLocaleDateString('en-IN')}</p>
             </td>
@@ -467,8 +468,8 @@ window.RapidBoy = window.RapidBoy || {};
             <td>
               <div class="section-title" style="margin-top:0; font-size: ${9 * scaleFactor}pt;">Service Metadata</div>
               <p style="margin: 3px 0;"><strong>Inward ID:</strong> ${ticket.inwardNumber || 'N/A'}</p>
-              <p style="margin: 3px 0;"><strong>Assigned Tech:</strong> ${ticket.technician || 'Unassigned'}</p>
               <p style="margin: 3px 0;"><strong>Current Status:</strong> <span style="color: #2563EB; font-weight: bold;">${ticket.status}</span></p>
+              <p><strong>Estimated Service Duration:</strong> ${ticket.estDelivery || "2–7 Working Days"}</p>
             </td>
           </tr>
         </table>
@@ -482,7 +483,7 @@ window.RapidBoy = window.RapidBoy || {};
             <td>${ticket.brand || ''} ${ticket.model || ''}</td>
           </tr>
           <tr>
-            <th>Serial Number / IMEI</th>
+            <th>Serial Number / Service Tag</th>
             <td colspan="3"><code style="color: #2563EB; font-weight: bold;">${ticket.serialNumber || 'Not Provided'}</code></td>
           </tr>
           <tr>
