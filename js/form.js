@@ -151,6 +151,7 @@ window.RapidBoy = window.RapidBoy || {};
             <option value="Mani">Mani</option>
             <option value="Munesh">Munesh</option>
             <option value="Murugan">Murugan</option>
+            <option> value="Karthi">Karthi</option>
           </select>
           <label class="select-label-fix" style="background: #f8fafc; color: #475569;">Received By</label>
           <span class="material-icons-round input-icon">person</span>
