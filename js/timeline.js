@@ -60,7 +60,7 @@ window.RapidBoy = window.RapidBoy || {};
     const calculatedBalanceDue = Math.max(0, finalCost - totalPaid);
 
     const baseDomain = getSafeBaseDomain();
-    const trackingLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+    const trackingLink = `${baseDomain}/?track=${encodeURIComponent(ticket.trackingToken)}`;
 
     // Parse Timeline audit logs
     let timelineEvents = [];
