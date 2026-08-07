@@ -233,7 +233,7 @@ window.RapidBoy = window.RapidBoy || {};
     if (!ticket) return;
 
     const baseDomain = getSafeBaseDomain();
-    const trackingLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+    const trackingLink = `${baseDomain}/?track=${encodeURIComponent(ticket.trackingToken)}`;
 
     const messageText =
       `*RAPID BOY SERVICE JOB ASSIGNMENT*
@@ -379,7 +379,7 @@ window.RapidBoy = window.RapidBoy || {};
   const generateJobSheetMarkup = function (ticket, scaleFactor = 1) {
     console.log(ticket);
     const baseDomain = getSafeBaseDomain();
-    const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.ticketNumber)}`;
+    const liveTrackerLink = `${baseDomain}/?track=${encodeURIComponent(ticket.trackingToken)}`;
 
     let totalPaid = 0;
     let historyArr = [];
