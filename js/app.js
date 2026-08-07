@@ -124,12 +124,11 @@ window.RapidBoy = window.RapidBoy || {};
   };
 
   // 4. Standalone Public Live Status Tracker Interceptor (?track=RB-TK-2026-XXXX)
-  function handleUrlTrackingInterceptor() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const trackingTicketId = urlParams.get('track');
+  const urlParams = new URLSearchParams(window.location.search);
+const trackingToken = urlParams.get('track');
 
-    if (trackingTicketId) {
-      console.log("🎯 Customer Tracking Request Active for ID:", trackingTicketId);
+if (trackingToken) {
+  console.log("🎯 Secure Customer Tracking Request Active");
 
       const globalLoader = document.getElementById('global-loader');
       if (globalLoader) globalLoader.classList.add('wrapper-hidden');
