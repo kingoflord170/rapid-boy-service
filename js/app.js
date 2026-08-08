@@ -123,11 +123,12 @@ window.RapidBoy = window.RapidBoy || {};
     }
   };
 
-  // 4. Standalone Public Live Status Tracker Interceptor (?track=RB-TK-2026-XXXX)
+// 4. Standalone Public Live Status Tracker Interceptor
+function handleUrlTrackingInterceptor() {
   const urlParams = new URLSearchParams(window.location.search);
-const trackingToken = urlParams.get('track');
+  const trackingToken = urlParams.get('track');
 
-if (trackingToken) {
+  if (trackingToken) {
   console.log("🎯 Secure Customer Tracking Request Active");
 
       const globalLoader = document.getElementById('global-loader');
@@ -163,7 +164,7 @@ if (trackingToken) {
         trackCard.innerHTML = `
           <div style="text-align: center; padding: 30px 0;">
             <div style="border: 3px solid #2563EB; border-top-color: transparent; width: 36px; height: 36px; border-radius: 50%; margin: 0 auto; animation: spin 0.8s linear infinite;"></div>
-            <p style="margin-top: 16px; color: #64748B; font-size: 0.9rem;">Fetching live repair status for <strong>${App.Utils.sanitizeHTML(trackingTicketId)}</strong>...</p>
+            <p style="margin-top: 16px; color: #64748B; font-size: 0.9rem;">Fetching live repair status for <strong>${App.Utils.sanitizeHTML(trackingToken)}</strong>...</p>
           </div>
           <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
         `;
@@ -177,7 +178,7 @@ if (trackingToken) {
           const activeDriver = window.API || window.Api || App.Api;
 
           if (activeDriver && typeof activeDriver.transmitPayload === 'function') {
-            const res = await activeDriver.transmitPayload({ action: 'getTicketStatus', ticketNumber: trackingTicketId });
+            const res = await activeDriver.transmitPayload({ action: 'getTicketStatus', ticketNumber: trackingToken });
             if (res && res.status === 'success' && res.data) {
               ticketRecord = res.data;
             }
@@ -276,7 +277,7 @@ if (trackingToken) {
               <div style="text-align: center; padding: 20px 0;">
                 <div style="font-size: 2.5rem; margin-bottom: 10px;">❌</div>
                 <h3 style="color: #EF4444; margin: 0 0 6px 0;">Work Order Not Found</h3>
-                <p style="color: #64748B; font-size: 0.85rem; margin: 0;">Ticket ID <strong>${App.Utils.sanitizeHTML(trackingTicketId)}</strong> is not registered.</p>
+                <p style="color: #64748B; font-size: 0.85rem; margin: 0;">Ticket ID <strong>${App.Utils.sanitizeHTML(ticketRecord.ticketNumber)}</strong> is not registered.</p>
               </div>
             `;
           }
